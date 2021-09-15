@@ -17,9 +17,6 @@
 #ifndef GBJ_APPTHINGSBOARD_H
 #define GBJ_APPTHINGSBOARD_H
 
-#undef SERIAL_PREFIX
-#define SERIAL_PREFIX "gbj_appthingsboard"
-
 #if defined(__AVR__)
   #include <Arduino.h>
   #include <inttypes.h>
@@ -37,6 +34,9 @@
 #include "gbj_appwifi.h"
 #include "gbj_serial_debug.h"
 #include "gbj_timer.h"
+
+#undef SERIAL_PREFIX
+#define SERIAL_PREFIX "gbj_appthingsboard"
 
 class gbj_appthingsboard : public gbj_appbase
 {
@@ -65,10 +65,9 @@ public:
   */
   inline gbj_appthingsboard(const char *server, const char *token)
   {
-    WiFiClient wificlient;
     _server = server;
     _token = token;
-    _thingsboard = new ThingsBoard(wificlient);
+    _thingsboard = new ThingsBoard(_wificlient);
     _timer = new gbj_timer(0);
   }
 
@@ -145,7 +144,7 @@ public:
   template<class T>
   ResultCodes publishDataItem(const char *key, T value)
   {
-    SERIAL_ACTION("publishDataItem")
+    SERIAL_ACTION("publishDataItem...")
     if (_thingsboard->sendTelemetryData(key, value))
     {
       SERIAL_ACTION_END("OK");
@@ -161,7 +160,7 @@ public:
   template<class T>
   ResultCodes publishAttrib(const char *attrName, T value)
   {
-    SERIAL_ACTION("publishAttrib");
+    SERIAL_ACTION("publishAttrib...");
     if (_thingsboard->sendAttributeData(attrName, value))
     {
       SERIAL_ACTION_END("OK");
@@ -193,6 +192,7 @@ private:
     PERIOD_CONNECT = 500,
   };
   size_t _callbacks_size;
+  WiFiClient _wificlient;
   const char *_server;
   const char *_token;
   bool _subscribed;

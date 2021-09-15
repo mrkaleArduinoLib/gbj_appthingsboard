@@ -8,7 +8,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     return setLastResult();
   }
   uint8_t counter = Timing::PERIOD_ATTEMPS;
-  SERIAL_ACTION("Connecting to TB");
+  SERIAL_ACTION("Connecting to TB...");
   _subscribed = false;
   while (!_thingsboard->connect(_server, _token))
   {
