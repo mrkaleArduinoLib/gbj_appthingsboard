@@ -7,26 +7,48 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   {
     return setLastResult();
   }
-  uint8_t counter = Timing::PERIOD_ATTEMPS;
+  uint8_t counter = Params::PARAM_ATTEMPS;
   SERIAL_ACTION("Connecting to TB...");
   _subscribed = false;
-  while (!_thingsboard->connect(_server, _token))
+  if (_fails)
   {
-    if (counter--)
+    while (!_thingsboard->connect(_server, _token))
     {
-      delay(Timing::PERIOD_CONNECT);
+      if (counter--)
+      {
+        delay(Timing::PERIOD_CONNECT);
+      }
+      else
+      {
+        SERIAL_ACTION_END("Timeout");
+        _fails--;
+        _tsRetry = millis();
+        SERIAL_VALUE("fails", Params::PARAM_FAILS - _fails);
+         return setLastResult(ResultCodes::ERROR_CONNECT);
+      }
+      SERIAL_DOT
     }
-    else
-    {
-      SERIAL_ACTION_END("Timeout");
-      return setLastResult(ResultCodes::ERROR_CONNECT);
-    }
-    SERIAL_DOT
+    SERIAL_ACTION_END("Connected");
+    SERIAL_VALUE("server", _server);
+    SERIAL_VALUE("token", _token);
+    SERIAL_VALUE("fails", Params::PARAM_FAILS - _fails);
+    _fails = Params::PARAM_FAILS;
+    _tsRetry = millis();
+    setLastResult();
   }
-  SERIAL_ACTION_END("Connected");
-  SERIAL_VALUE("server", _server);
-  SERIAL_VALUE("token", _token);
-  return setLastResult();
+  else
+  {
+    SERIAL_ACTION_END("Ignored");
+    setLastResult(ResultCodes::ERROR_CONNECT);
+    // Retry connection after a while since recent connection or failure
+    if (millis() - _tsRetry > Timing::PERIOD_RETRY)
+    {
+      SERIAL_TITLE("Reset retry");
+      _fails = Params::PARAM_FAILS;
+      _tsRetry = millis();
+    }
+  }
+  return getLastResult();
 }
 
 gbj_appthingsboard::ResultCodes gbj_appthingsboard::subscribe()

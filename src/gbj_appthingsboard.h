@@ -186,10 +186,15 @@ public:
   inline bool isSubscribed() { return _subscribed; }
 
 private:
-  enum Timing : unsigned int
+  enum Timing : unsigned long
   {
-    PERIOD_ATTEMPS = 10,
     PERIOD_CONNECT = 500,
+    PERIOD_RETRY = 3600000,
+  };
+  enum Params : byte
+  {
+    PARAM_ATTEMPS = 10,
+    PARAM_FAILS = 5,
   };
   size_t _callbacks_size;
   WiFiClient _wificlient;
@@ -197,6 +202,8 @@ private:
   const char *_token;
   bool _subscribed;
   bool _attribsChange;
+  byte _fails = Params::PARAM_FAILS;
+  unsigned long _tsRetry = millis();
   // Handlers
   ThingsBoard *_thingsboard;
   RPC_Callback *_callbacks;
