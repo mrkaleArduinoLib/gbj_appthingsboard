@@ -179,6 +179,7 @@ public:
 
   // Setters
   inline void setPeriod(unsigned long period) { _timer->setPeriod(period); };
+  inline void setAttribsChange() { _attribsChange = true; }
 
   // Getters
   inline unsigned long getPeriod() { return _timer->getPeriod(); };
@@ -219,7 +220,6 @@ protected:
     setPeriod(period);
     _timer->resume();
   }
-  inline void setAttribsChange() { _attribsChange = true; }
   inline void resetAttribsChange() { _attribsChange = false; }
   inline bool isAttribsChange() { return _attribsChange; }
 };

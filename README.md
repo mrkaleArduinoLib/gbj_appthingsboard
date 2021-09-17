@@ -52,6 +52,7 @@ Other constants and enumerations are inherited from the parent library.
 - [publishData()](#publishAttrib)
 - [publishData()](#publish)
 - [publishAttribs()](#publish)
+- [setAttribsChange()](#setAttribsChange)
 - [setPeriod()](#setPeriod)
 - [getPeriod()](#getPeriod)
 - [isConnected()](#isConnected)
@@ -298,6 +299,26 @@ None
 
 #### See also
 [getPeriod()](#getPeriod)
+
+[Back to interface](#interface)
+
+
+<a id="setAttribsChange"></a>
+## setAttribsChange()
+
+#### Description
+The method sets an internal flag about changing some device client attribute in order to refresh it in the IoT platform.
+- The method realizes receiving a signal from a sketch, usually in a RPC method for setting parameters, that some attribute has changed.
+- The method causes that all device client attributes are publish at once regardless some of them has not changed their value.
+
+#### Syntax
+    void setAttribsChange()
+
+#### Parameters
+None
+
+#### Returns
+None
 
 [Back to interface](#interface)
 
