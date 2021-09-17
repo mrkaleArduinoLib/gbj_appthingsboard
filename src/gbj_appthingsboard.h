@@ -217,6 +217,7 @@ protected:
   gbj_appwifi *_wifi;
   inline void startTimer(unsigned long period)
   {
+    SERIAL_VALUE("startTimer", period);
     setPeriod(period);
     _timer->resume();
   }
