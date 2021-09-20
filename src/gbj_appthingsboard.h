@@ -190,7 +190,7 @@ private:
   enum Timing : unsigned long
   {
     PERIOD_CONNECT = 500,
-    PERIOD_RETRY = 3600000,
+    PERIOD_RETRY = 900000,
   };
   enum Params : byte
   {
