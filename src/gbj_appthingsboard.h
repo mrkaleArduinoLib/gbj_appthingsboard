@@ -141,10 +141,11 @@ public:
     _thingsboard->loop();
   }
 
-  template<class T>
+  template <class T>
   ResultCodes publishDataItem(const char *key, T value)
   {
-    SERIAL_ACTION("publishDataItem...")
+    SERIAL_ACTION("publishDataItem: ");
+    SERIAL_CHAIN2(key, "...");
     if (_thingsboard->sendTelemetryData(key, value))
     {
       SERIAL_ACTION_END("OK");
@@ -157,10 +158,11 @@ public:
     }
   }
 
-  template<class T>
+  template <class T>
   ResultCodes publishAttrib(const char *attrName, T value)
   {
-    SERIAL_ACTION("publishAttrib...");
+    SERIAL_ACTION("publishAttrib: ");
+    SERIAL_CHAIN2(attrName, "...");
     if (_thingsboard->sendAttributeData(attrName, value))
     {
       SERIAL_ACTION_END("OK");
