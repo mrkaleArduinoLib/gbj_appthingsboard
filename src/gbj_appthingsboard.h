@@ -67,7 +67,6 @@ public:
     _server = server;
     _token = token;
     _timer = new gbj_timer(0);
-    _thingsboard = new ThingsBoard(_wificlient);
   }
 
   /*
@@ -174,20 +173,20 @@ public:
     }
   }
 
-  // ResultCodes publishAttribsBatch(const Attribute *data, size_t data_count)
-  // {
-  //   SERIAL_ACTION("publishAttribs...");
-  //   if (_thingsboard->sendAttributes(data, data_count))
-  //   {
-  //     SERIAL_ACTION_END("OK");
-  //     return setLastResult();
-  //   }
-  //   else
-  //   {
-  //     SERIAL_ACTION_END("Error");
-  //     return setLastResult(ResultCodes::ERROR_PUBLISH);
-  //   }
-  // }
+  ResultCodes publishAttribsBatch(const Attribute *data, size_t data_count)
+  {
+    SERIAL_ACTION("publishAttribs...");
+    if (_thingsboard->sendAttributes(data, data_count))
+    {
+      SERIAL_ACTION_END("OK");
+      return setLastResult();
+    }
+    else
+    {
+      SERIAL_ACTION_END("Error");
+      return setLastResult(ResultCodes::ERROR_PUBLISH);
+    }
+  }
 
   // Abstract methods
   virtual ResultCodes publishData() = 0;
@@ -215,7 +214,7 @@ private:
   };
   size_t _callbacks_size;
   WiFiClient _wificlient;
-  ThingsBoard *_thingsboard;
+  ThingsBoardSized<256> *_thingsboard = new ThingsBoardSized<256>(_wificlient);
   const char *_server;
   const char *_token;
   bool _subscribed;
