@@ -1,6 +1,7 @@
 <a id="library"></a>
+
 # gbj\_appthingsboard
-This is an application library, wich is used usually as a project library for particular PlatformIO project. However; in every project utilizing the ThingsBoard IoT platform should be copied the same library, so that it is located in central library storage.
+This is an application library, which is used usually as a project library for particular PlatformIO project. However; in every project utilizing the ThingsBoard IoT platform should be copied the same library, so that it is located in central library storage.
 
 - Library specifies (inherits from) the system `gbj_appbase` library.
 - Library utilizes error handling from the parent class.
@@ -8,6 +9,7 @@ This is an application library, wich is used usually as a project library for pa
 
 
 <a id="dependency"></a>
+
 ## Dependency
 
 - **gbj\_appbase**: Parent library for all application libraries loaded from the file `gbj_appbase.h`.
@@ -15,13 +17,6 @@ This is an application library, wich is used usually as a project library for pa
 - **gbj\_timer**: Library for executing internal timer within an instance object loaded from the file `gbj_timer.h`.
 - **gbj\_serial\_debug**: Auxilliary library for debug serial output loaded from the file `gbj_serial_debug.h`. It enables to exclude serial outputs from final compilation.
 - **ThingsBoard**: Library for managing connection with IoT platform loaded from the file `ThingsBoard.h` in library `ThingsBoard-Arduino-MQTT-SDK`.
-
-#### Particle platform
-- **Particle.h**: Includes alternative (C++) data type definitions.
-
-#### Arduino platform
-- **Arduino.h**: Main include file for the Arduino SDK.
-- **inttypes.h**: Integer type conversions. This header file includes the exact-width integer definitions and extends them with additional facilities provided by the implementation.
 
 #### Espressif ESP8266 platform
 - **Arduino.h**: Main include file for the Arduino platform.
@@ -31,8 +26,14 @@ This is an application library, wich is used usually as a project library for pa
 - **Arduino.h**: Main include file for the Arduino platform.
 - **WiFi.h**: Main include file for the wifi connection.
 
+#### Particle platform
+- **Particle.h**: Includes alternative (C++) data type definitions.
+
+> Library is not intended to be utilized on platforms without WiFi capabality.
+
 
 <a id="constants"></a>
+
 ## Constants
 
 - **gbj\_appthingsboard::VERSION**: Name and semantic version of the library.
@@ -41,6 +42,7 @@ Other constants and enumerations are inherited from the parent library.
 
 
 <a id="interface"></a>
+
 ## Interface
 
 - [gbj_appthingsboard()](#gbj_appthingsboard)
@@ -53,13 +55,14 @@ Other constants and enumerations are inherited from the parent library.
 - [publishData()](#publish)
 - [publishAttribs()](#publish)
 - [setAttribsChange()](#setAttribsChange)
-- [setPeriod()](#setPeriod)
-- [getPeriod()](#getPeriod)
+- [setPeriod()](#period)
+- [getPeriod()](#period)
 - [isConnected()](#isConnected)
 - [isSubscribed()](#isSubscribed)
 
 
 <a id="gbj_appthingsboard"></a>
+
 ## gbj_appthingsboard()
 
 #### Description
@@ -89,6 +92,7 @@ Object performing connection and reconnection to the IoT platform.
 
 
 <a id="begin"></a>
+
 ## begin()
 
 #### Description
@@ -123,6 +127,7 @@ void setup()
 
 
 <a id="callbacks"></a>
+
 ## callbacks()
 
 #### Description
@@ -170,27 +175,20 @@ void setup()
 
 
 <a id="run"></a>
+
 ## run()
 
 #### Description
-The execution method, which should be called frequently, usually in the loop function of a sketch.
+The execution method as the implementation of the virtual method from parent class, which should be called frequently, usually in the loop function of a sketch.
 - The method connects to the IoT platform at the very first calling it.
 - At the start of each timer period the method checks the connection to the wifi network as well as to the IoT platform. If wifi network is available it reconnects to the IoT platform if neccesary.
 - If the serial connection is active, the library outputs flow of the connection and at success lists input credentials of the connection to the IoT platform.
-
-#### Syntax
-	void run();
-
-#### Parameters
-None
-
-#### Returns
-None
 
 [Back to interface](#interface)
 
 
 <a id="publishDataItem"></a>
+
 ## publishDataItem()
 
 #### Description
@@ -223,6 +221,7 @@ Some of [result or error codes](#constants) from the parent class.
 
 
 <a id="publishAttrib"></a>
+
 ## publishAttrib()
 
 #### Description
@@ -255,6 +254,7 @@ Some of [result or error codes](#constants) from the parent class.
 
 
 <a id="publish"></a>
+
 ## publishData(), publishAttribs()
 
 #### Description
@@ -280,30 +280,18 @@ Some of [result or error codes](#constants) from the parent class.
 [Back to interface](#interface)
 
 
-<a id="setPeriod"></a>
-## setPeriod()
+<a id="period"></a>
+
+## setPeriod(), getPeriod()
 
 #### Description
-The method sets a new internal timer period. It allows to dynamically change a frequency of publishing data to the IoT platform.
-
-#### Syntax
-    void setPeriod(unsigned long period)
-
-#### Parameters
-- **period**: Duration of a repeating interval in milliseconds.
-  - *Valid values*: 0 ~ 2^32 * 1
-  - *Default value*: none
-
-#### Returns
-None
-
-#### See also
-[getPeriod()](#getPeriod)
+The methods are just straitforward implementation of the virual methods from the parent class.
 
 [Back to interface](#interface)
 
 
 <a id="setAttribsChange"></a>
+
 ## setAttribsChange()
 
 #### Description
@@ -323,28 +311,8 @@ None
 [Back to interface](#interface)
 
 
-<a id="getPeriod"></a>
-## getPeriod()
-
-#### Description
-The method returns current internal timer period, i.e., frequency of the wifi connection check.
-
-#### Syntax
-    unsigned long getPeriod()
-
-#### Parameters
-None
-
-#### Returns
-Current timer period in milliseconds.
-
-#### See also
-[setPeriod()](#getPeriod)
-
-[Back to interface](#interface)
-
-
 <a id="isConnected"></a>
+
 ## isConnected()
 
 #### Description
@@ -363,6 +331,7 @@ Flag about connecting status to IoT platform.
 
 
 <a id="isSubscribed"></a>
+
 ## isSubscribed()
 
 #### Description

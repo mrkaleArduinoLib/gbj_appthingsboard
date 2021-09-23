@@ -17,10 +17,7 @@
 #ifndef GBJ_APPTHINGSBOARD_H
 #define GBJ_APPTHINGSBOARD_H
 
-#if defined(__AVR__)
-  #include <Arduino.h>
-  #include <inttypes.h>
-#elif defined(ESP8266)
+#if defined(ESP8266)
   #include <Arduino.h>
   #include <ESP8266WiFi.h>
 #elif defined(ESP32)
@@ -28,6 +25,8 @@
   #include <WiFi.h>
 #elif defined(PARTICLE)
   #include <Particle.h>
+#else
+  #error !!! Only platforms with WiFi are suppored !!!
 #endif
 #include "ThingsBoard.h"
 #include "gbj_appbase.h"
@@ -141,7 +140,7 @@ public:
     _thingsboard->loop();
   }
 
-  template <class T>
+  template<class T>
   ResultCodes publishDataItem(const char *key, T value)
   {
     SERIAL_ACTION("publishDataItem: ");
@@ -158,7 +157,7 @@ public:
     }
   }
 
-  template <class T>
+  template<class T>
   ResultCodes publishAttrib(const char *attrName, T value)
   {
     SERIAL_ACTION("publishAttrib: ");
