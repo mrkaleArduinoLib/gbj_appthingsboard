@@ -49,11 +49,12 @@ Other constants and enumerations are inherited from the parent library.
 - [begin()](#begin)
 - [callbacks()](#callbacks)
 - [run()](#run)
-- [publishDataItem()](#publishDataItem)
+- [publishMeasure()](#publishMeasure)
+- [publishMeasures()](#publish)
+- [publishMeasuresBatch()](#publishMeasuresBatch)
 - [publishAttrib()](#publishAttrib)
-- [publishData()](#publishAttrib)
-- [publishData()](#publish)
 - [publishAttribs()](#publish)
+- [publishAttribsBatch()](#publishAttribsBatch)
 - [setAttribsChange()](#setAttribsChange)
 - [setPeriod()](#period)
 - [getPeriod()](#period)
@@ -187,18 +188,18 @@ The execution method as the implementation of the virtual method from parent cla
 [Back to interface](#interface)
 
 
-<a id="publishDataItem"></a>
+<a id="publishMeasure"></a>
 
-## publishDataItem()
+## publishMeasure()
 
 #### Description
-The method publishes input key-value pair as the telemetry of the device to the IoT platform.
+The method publishes input key-value pair as the telemetry data item of the device to the IoT platform.
 - The method is templated by input value data type.
 - The method does not need to be called by templating syntax, because it is able to identify proper data type by data type of the just value parameter.
 
 #### Syntax
     template<class T>
-    ResultCodes publishDataItem(const char *key, T value);
+    ResultCodes publishMeasure(const char *key, T value);
 
 #### Parameters
 
@@ -215,7 +216,54 @@ The method publishes input key-value pair as the telemetry of the device to the 
 Some of [result or error codes](#constants) from the parent class.
 
 #### See also
+[publishMeasures()](#publish)
+
+[publishMeasuresBatch()](#publishMeasuresBatch)
+
 [publishAttrib()](#publishAttrib)
+
+[Back to interface](#interface)
+
+
+<a id="publishMeasuresBatch"></a>
+
+## publishMeasuresBatch()
+
+#### Description
+The method publishes input array of key-value pairs as a batch of the telemetry data items of the device to the IoT platform.
+- The key-value pair itself is an array with two items, where the first one is the key and second one is the value.
+
+#### Syntax
+    ResultCodes publishMeasuresBatch(const Telemetry *data, size_t data_count);
+
+#### Parameters
+
+- **data**: Pointer to an array of arrays with telemetry data item key-value pairs.
+  - *Valid values*: Pointer to a constant array of arrays.
+  - *Default value*: none
+
+
+- **data_count**: Number of key-value pairs in input array
+  - *Valid values*: Non-negative integer
+  - *Default value*: none
+
+#### Returns
+Some of [result or error codes](#constants) from the parent class.
+
+#### Example
+```cpp
+byte data_items = 2;
+Telemetry data[data_items] = {
+  { "temperature", 20.3 },
+  { "humidity", 40 },
+};
+publishDataBatch(data, data_items)
+```
+
+#### See also
+[publishMeasure()](#publishMeasure)
+
+[publishMeasures()](#publish)
 
 [Back to interface](#interface)
 
@@ -248,22 +296,69 @@ The method publishes input key-value pair as the clilent attributes of the devic
 Some of [result or error codes](#constants) from the parent class.
 
 #### See also
-[publishDataItem()](#publishDataItem)
+[publishAttribs()](#publish)
+
+[publishAttribsBatch()](#publishAttribsBatch)
+
+[publishMeasure()](#publishMeasure)
+
+[Back to interface](#interface)
+
+
+<a id="publishAttribsBatch"></a>
+
+## publishAttribsBatch()
+
+#### Description
+The method publishes input array of key-value pairs as a batch of the client attributes of the device to the IoT platform.
+- The key-value pair itself is an array with two items, where the first one is the key and second one is the value.
+
+#### Syntax
+    ResultCodes publishAttribsBatch(const Attribute *data, size_t data_count);
+
+#### Parameters
+
+- **data**: Pointer to an array of arrays with client attributes key-value pairs.
+  - *Valid values*: Pointer to a constant array of arrays.
+  - *Default value*: none
+
+
+- **data_count**: Number of key-value pairs in input array
+  - *Valid values*: Non-negative integer
+  - *Default value*: none
+
+#### Returns
+Some of [result or error codes](#constants) from the parent class.
+
+#### Example
+```cpp
+byte data_items = 2;
+Attribute data[data_items] = {
+  { "period", 5000 },
+  { "factor", 0.2 },
+};
+publishAttribsBatch(data, data_items)
+```
+
+#### See also
+[publishAttrib()](#publishAttrib)
+
+[publishAttribs()](#publish)
 
 [Back to interface](#interface)
 
 
 <a id="publish"></a>
 
-## publishData(), publishAttribs()
+## publishMeasures(), publishAttribs()
 
 #### Description
 The virtual methods that should implement every child class derived from this library class.
-- The method `publishData()` should contain multiple calls of the method [publishDataItem()](#publishDataItem) for all desired telemetry data itemsof the device.
-- The method `publishAttribs()` should contain multiple calls of the method [publishAttrib()](#publishAttrib) for all desired client attributes of the device.
+- The method `publishMeasures()` should contain either multiple calls of the method [publishMeasure()](#publishMeasure) or the single call of the method [publishMeasuresBatch()](#publishMeasuresBatch) for all desired telemetry data items of the device.
+- The method `publishAttribs()` should contain either multiple calls of the method [publishAttrib()](#publishAttrib) or the single call of the method [publishAttribsBatch()](#publishAttribsBatch ) for all desired client attributes of the device.
 
 #### Syntax
-    ResultCodes publishData();
+    ResultCodes publishMeasures();
     ResultCodes publishAttribs();
 
 #### Parameters
@@ -273,9 +368,13 @@ None
 Some of [result or error codes](#constants) from the parent class.
 
 #### See also
-[publishDataItem()](#publishDataItem)
+[publishMeasure()](#publishMeasure)
+
+[publishMeasuresBatch()](#publishMeasuresBatch)
 
 [publishAttrib()](#publishAttrib)
+
+[publishAttribsBatch()](#publishAttribsBatch)
 
 [Back to interface](#interface)
 

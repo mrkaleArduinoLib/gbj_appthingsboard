@@ -126,7 +126,7 @@ public:
       // Publish telemetry
       if (isSuccess())
       {
-        publishData();
+        publishMeasures();
       }
       // Error
       if (isError())
@@ -139,10 +139,30 @@ public:
     _thingsboard->loop();
   }
 
+  /*
+    Publish telemetry data item.
+
+    DESCRIPTION:
+    Method publishes one data item as a telemetry measure.
+    - Method is templated by the data type of a measure's value.
+
+    PARAMETERS:
+    key - A pointer to the constant string denoting the name of a measure.
+      - Data type: const char
+      - Default value: none
+      - Limited range: system address space
+
+    value - Value of the measure.
+      - Data type: Any of int, bool, float, const char*
+      - Default value: none
+      - Limited range: none
+
+    RETURN: object
+  */
   template<class T>
-  ResultCodes publishDataItem(const char *key, T value)
+  ResultCodes publishMeasure(const char *key, T value)
   {
-    SERIAL_ACTION("publishDataItem: ");
+    SERIAL_ACTION("publishMeasure: ");
     SERIAL_CHAIN2(key, "...");
     if (_thingsboard->sendTelemetryData(key, value))
     {
@@ -151,11 +171,48 @@ public:
     }
     else
     {
-      SERIAL_ACTION_END("Error");
+      // ThingsBoard outputs error message with EOL
+      SERIAL_VALUE("publishMeasure", "Error");
       return setLastResult(ResultCodes::ERROR_PUBLISH);
     }
   }
 
+  ResultCodes publishMeasuresBatch(const Telemetry *data, size_t data_count)
+  {
+    SERIAL_ACTION("publishMeasuresBatch...");
+    if (_thingsboard->sendTelemetry(data, data_count))
+    {
+      SERIAL_ACTION_END("OK");
+      return setLastResult();
+    }
+    else
+    {
+      // ThingsBoard outputs error message with EOL
+      SERIAL_VALUE("publishMeasuresBatch", "Error");
+      return setLastResult(ResultCodes::ERROR_PUBLISH);
+    }
+  }
+
+  /*
+    Publish client attribute.
+
+    DESCRIPTION:
+    Method publishes one client attribute of a device.
+    - Method is templated by the data type of an attribute's value.
+
+    PARAMETERS:
+    key - A pointer to the constant string denoting the name of an attribute.
+      - Data type: const char
+      - Default value: none
+      - Limited range: system address space
+
+    value - Value of the attribute.
+      - Data type: Any of int, bool, float, const char*
+      - Default value: none
+      - Limited range: none
+
+    RETURN: object
+  */
   template<class T>
   ResultCodes publishAttrib(const char *attrName, T value)
   {
@@ -168,14 +225,15 @@ public:
     }
     else
     {
-      SERIAL_ACTION_END("Error");
+      // ThingsBoard outputs error message with EOL
+      SERIAL_VALUE("publishAttrib", "Error");
       return setLastResult(ResultCodes::ERROR_PUBLISH);
     }
   }
 
   ResultCodes publishAttribsBatch(const Attribute *data, size_t data_count)
   {
-    SERIAL_ACTION("publishAttribs...");
+    SERIAL_ACTION("publishAttribsBatch...");
     if (_thingsboard->sendAttributes(data, data_count))
     {
       SERIAL_ACTION_END("OK");
@@ -183,13 +241,14 @@ public:
     }
     else
     {
-      SERIAL_ACTION_END("Error");
+      // ThingsBoard outputs error message with EOL
+      SERIAL_VALUE("publishAttribsBatch", "Error");
       return setLastResult(ResultCodes::ERROR_PUBLISH);
     }
   }
 
   // Abstract methods
-  virtual ResultCodes publishData() = 0;
+  virtual ResultCodes publishMeasures() = 0;
   virtual ResultCodes publishAttribs() = 0;
 
   // Setters

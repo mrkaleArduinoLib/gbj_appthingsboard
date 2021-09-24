@@ -13,10 +13,12 @@ gbj_appthingsboard	KEYWORD1
 begin	KEYWORD2
 callbacks	KEYWORD2
 run	KEYWORD2
-publishDataItem	KEYWORD2
-publishData	KEYWORD2
+publishMeasure	KEYWORD2
+publishMeasures	KEYWORD2
+publishMeasuresBatch	KEYWORD2
 publishAttrib	KEYWORD2
 publishAttribs	KEYWORD2
+publishAttribsBatch	KEYWORD2
 setPeriod	KEYWORD2
 getPeriod	KEYWORD2
 isConnected	KEYWORD2
