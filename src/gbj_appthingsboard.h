@@ -179,7 +179,8 @@ public:
 
   ResultCodes publishMeasuresBatch(const Telemetry *data, size_t data_count)
   {
-    SERIAL_ACTION("publishMeasuresBatch...");
+    SERIAL_ACTION("publishMeasuresBatch");
+    SERIAL_CHAIN3(" (", data_count, ")...");
     if (_thingsboard->sendTelemetry(data, data_count))
     {
       SERIAL_ACTION_END("OK");
@@ -233,7 +234,8 @@ public:
 
   ResultCodes publishAttribsBatch(const Attribute *data, size_t data_count)
   {
-    SERIAL_ACTION("publishAttribsBatch...");
+    SERIAL_ACTION("publishAttribsBatch");
+    SERIAL_CHAIN3(" (", data_count, ")...");
     if (_thingsboard->sendAttributes(data, data_count))
     {
       SERIAL_ACTION_END("OK");
@@ -273,7 +275,8 @@ private:
   };
   size_t _callbacks_size;
   WiFiClient _wificlient;
-  ThingsBoardSized<256> *_thingsboard = new ThingsBoardSized<256>(_wificlient);
+  ThingsBoardSized<256, 16> *_thingsboard =
+    new ThingsBoardSized<256, 16>(_wificlient);
   const char *_server;
   const char *_token;
   bool _subscribed;
