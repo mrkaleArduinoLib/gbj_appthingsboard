@@ -5,6 +5,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
 {
   if (isConnected())
   {
+    SERIAL_TITLE("Connected");
     return setLastResult();
   }
   uint8_t counter = Params::PARAM_ATTEMPS;

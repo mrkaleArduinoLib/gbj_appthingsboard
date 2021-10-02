@@ -72,7 +72,7 @@ Constructor creates the class instance object and initiates internal resources.
 - It creates one internal timer without a timer handler.
 
 #### Syntax
-    gbj_appthingsboard(const char *server, const char *token);
+    gbj_appthingsboard(const char *server, const char *token)
 
 #### Parameters
 
@@ -102,7 +102,7 @@ The initialization method of the instance object, which should be called in the 
 - The method set the internal flag about changed published attributes in order to achieve initial publishing of all attributes at the start of the sketch.
 
 #### Syntax
-	void begin(gbj_appwifi *wifi);
+	void begin(gbj_appwifi *wifi)
 
 #### Parameters
 
@@ -116,11 +116,11 @@ None
 #### Example
 Initialization instance object in the sketch loop. Instantiation of the library is only for illustration here. Use the appropriate child library instead.
 ```cpp
-gbj_appwifi wifi = gbj_appwifi(...);
-gbj_appthingsboard device = gbj_appthingsboard("MyServer", "MyToken");
+gbj_appwifi wifi = gbj_appwifi(...)
+gbj_appthingsboard device = gbj_appthingsboard("MyServer", "MyToken")
 void setup()
 {
-  device.begin(&wifi);
+  device.begin(&wifi)
 }
 ```
 
@@ -137,7 +137,7 @@ The registration method for subscribing external functions as callbacks to the I
 - The method subscribes all external function in the input list.
 
 #### Syntax
-	void callbacks(RPC_Callback *callbacks = 0, size_t callbacks_size = 0);
+	void callbacks(RPC_Callback *callbacks = 0, size_t callbacks_size = 0)
 
 #### Parameters
 
@@ -165,10 +165,10 @@ RPC_Callback callbacks[callbacks_size] = {
   { "getValue", processGetDelay },
   { "rpcCommand", processCommand },
 };
-gbj_appthingsboard device = gbj_appthingsboard("MyServer", "MyToken");
+gbj_appthingsboard device = gbj_appthingsboard("MyServer", "MyToken")
 void setup()
 {
-  device.callbacks(callbacks, callbacks_size);
+  device.callbacks(callbacks, callbacks_size)
 }
 ```
 
@@ -199,7 +199,7 @@ The method publishes input key-value pair as the telemetry data item of the devi
 
 #### Syntax
     template<class T>
-    ResultCodes publishMeasure(const char *key, T value);
+    ResultCodes publishMeasure(const char *key, T value)
 
 #### Parameters
 
@@ -234,7 +234,7 @@ The method publishes input array of key-value pairs as a batch of the telemetry 
 - The key-value pair itself is an array with two items, where the first one is the key and second one is the value.
 
 #### Syntax
-    ResultCodes publishMeasuresBatch(const Telemetry *data, size_t data_count);
+    ResultCodes publishMeasuresBatch(const Telemetry *data, size_t data_count)
 
 #### Parameters
 
@@ -279,7 +279,7 @@ The method publishes input key-value pair as the clilent attributes of the devic
 
 #### Syntax
     template<class T>
-    ResultCodes publishAttrib(const char *attrName, T value);
+    ResultCodes publishAttrib(const char *attrName, T value)
 
 #### Parameters
 
@@ -314,7 +314,7 @@ The method publishes input array of key-value pairs as a batch of the client att
 - The key-value pair itself is an array with two items, where the first one is the key and second one is the value.
 
 #### Syntax
-    ResultCodes publishAttribsBatch(const Attribute *data, size_t data_count);
+    ResultCodes publishAttribsBatch(const Attribute *data, size_t data_count)
 
 #### Parameters
 
@@ -358,8 +358,8 @@ The virtual methods that should implement every child class derived from this li
 - The method `publishAttribs()` should contain either multiple calls of the method [publishAttrib()](#publishAttrib) or the single call of the method [publishAttribsBatch()](#publishAttribsBatch ) for all desired client attributes of the device.
 
 #### Syntax
-    ResultCodes publishMeasures();
-    ResultCodes publishAttribs();
+    ResultCodes publishMeasures()
+    ResultCodes publishAttribs()
 
 #### Parameters
 None
@@ -418,7 +418,7 @@ None
 The method returns a flag whether the device is connected to the IoT platform.
 
 #### Syntax
-    bool isConnected();
+    bool isConnected()
 
 #### Parameters
 None
@@ -437,7 +437,7 @@ Flag about connecting status to IoT platform.
 The method returns a flag whether the device is successfully subscribed to the IoT platform.
 
 #### Syntax
-    bool isSubscribed();
+    bool isSubscribed()
 
 #### Parameters
 None
