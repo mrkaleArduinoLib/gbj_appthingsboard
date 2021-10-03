@@ -54,7 +54,6 @@ public:
       - Data type: constant string
       - Default value: none
       - Limited range: none
-
     token - Device authorization token.
       - Data type: constant string
       - Default value: none

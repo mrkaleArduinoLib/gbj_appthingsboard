@@ -116,11 +116,11 @@ None
 #### Example
 Initialization instance object in the sketch loop. Instantiation of the library is only for illustration here. Use the appropriate child library instead.
 ```cpp
-gbj_appwifi wifi = gbj_appwifi(...)
-gbj_appthingsboard device = gbj_appthingsboard("MyServer", "MyToken")
+gbj_appwifi wifi = gbj_appwifi(...);
+gbj_appthingsboard device = gbj_appthingsboard("MyServer", "MyToken");
 void setup()
 {
-  device.begin(&wifi)
+  device.begin(&wifi);
 }
 ```
 
@@ -165,10 +165,10 @@ RPC_Callback callbacks[callbacks_size] = {
   { "getValue", processGetDelay },
   { "rpcCommand", processCommand },
 };
-gbj_appthingsboard device = gbj_appthingsboard("MyServer", "MyToken")
+gbj_appthingsboard device = gbj_appthingsboard("MyServer", "MyToken");
 void setup()
 {
-  device.callbacks(callbacks, callbacks_size)
+  device.callbacks(callbacks, callbacks_size);
 }
 ```
 
@@ -257,7 +257,7 @@ Telemetry data[data_items] = {
   { "temperature", 20.3 },
   { "humidity", 40 },
 };
-publishDataBatch(data, data_items)
+publishDataBatch(data, data_items);
 ```
 
 #### See also
@@ -337,7 +337,7 @@ Attribute data[data_items] = {
   { "period", 5000 },
   { "factor", 0.2 },
 };
-publishAttribsBatch(data, data_items)
+publishAttribsBatch(data, data_items);
 ```
 
 #### See also
