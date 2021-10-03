@@ -61,7 +61,6 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::subscribe()
   // All consequent data processing will happen in callbacks as denoted by
   // callbacks[] array.
   SERIAL_ACTION("Subscribing for RPC...");
-  _subscribed = false;
   if (_thingsboard->RPC_Subscribe(_callbacks, _callbacks_size))
   {
     SERIAL_ACTION_END("OK");

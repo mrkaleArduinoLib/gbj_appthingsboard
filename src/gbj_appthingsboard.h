@@ -86,14 +86,15 @@ public:
   {
     SERIAL_TITLE("begin");
     _wifi = wifi;
-    setAttribsChange(); // For initial attributes publishing
+    _attribsStaticChange = true; // Init publishing of static attributes
+    _attribsChange = true;  // Init publishing of dymaic attributes
   }
 
   inline void callbacks(RPC_Callback *callbacks = 0, size_t callbacks_size = 0)
   {
-    SERIAL_TITLE("callbacks");
     _callbacks = callbacks;
     _callbacks_size = callbacks_size;
+    SERIAL_VALUE("callbacks", _callbacks_size);
   }
 
   inline void run()
@@ -117,10 +118,23 @@ public:
       {
         subscribe();
       }
-      // Publish client attributes at change
-      if (isSuccess())
+      // Publish static client attributes at change
+      if (isSuccess() && _attribsStaticChange)
+      {
+        publishAttribsStatic();
+        if (isSuccess())
+        {
+         _attribsStaticChange = false;
+        }
+      }
+      // Publish dynamic client attributes at change
+      if (isSuccess() && _attribsChange)
       {
         publishAttribs();
+        if (isSuccess())
+        {
+          _attribsChange = false;
+        }
       }
       // Publish telemetry
       if (isSuccess())
@@ -159,7 +173,7 @@ public:
     RETURN: object
   */
   template<class T>
-  ResultCodes publishMeasure(const char *key, T value)
+  inline ResultCodes publishMeasure(const char *key, T value)
   {
     SERIAL_ACTION("publishMeasure: ");
     SERIAL_CHAIN2(key, "...");
@@ -176,7 +190,8 @@ public:
     }
   }
 
-  ResultCodes publishMeasuresBatch(const Telemetry *data, size_t data_count)
+  inline ResultCodes publishMeasuresBatch(const Telemetry *data,
+                                         size_t data_count)
   {
     SERIAL_ACTION("publishMeasuresBatch");
     SERIAL_CHAIN3(" (", data_count, ")...");
@@ -214,7 +229,7 @@ public:
     RETURN: object
   */
   template<class T>
-  ResultCodes publishAttrib(const char *attrName, T value)
+  inline ResultCodes publishAttrib(const char *attrName, T value)
   {
     SERIAL_ACTION("publishAttrib: ");
     SERIAL_CHAIN2(attrName, "...");
@@ -231,7 +246,8 @@ public:
     }
   }
 
-  ResultCodes publishAttribsBatch(const Attribute *data, size_t data_count)
+  inline ResultCodes publishAttribsBatch(const Attribute *data,
+                                         size_t data_count)
   {
     SERIAL_ACTION("publishAttribsBatch");
     SERIAL_CHAIN3(" (", data_count, ")...");
@@ -251,6 +267,7 @@ public:
   // Abstract methods
   virtual ResultCodes publishMeasures() = 0;
   virtual ResultCodes publishAttribs() = 0;
+  virtual ResultCodes publishAttribsStatic() = 0;
 
   // Setters
   inline void setPeriod(unsigned long period) { _timer->setPeriod(period); };
@@ -280,6 +297,7 @@ private:
   const char *_token;
   bool _subscribed;
   bool _attribsChange;
+  bool _attribsStaticChange;
   byte _fails = Params::PARAM_FAILS;
   unsigned long _tsRetry = millis();
   // Handlers
@@ -297,8 +315,6 @@ protected:
     setPeriod(period);
     _timer->resume();
   }
-  inline void resetAttribsChange() { _attribsChange = false; }
-  inline bool isAttribsChange() { return _attribsChange; }
 };
 
 #endif
