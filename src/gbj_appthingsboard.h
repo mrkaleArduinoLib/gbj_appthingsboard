@@ -66,6 +66,8 @@ public:
     _server = server;
     _token = token;
     _timer = new gbj_timer(0);
+    _attribsChangeStatic = true; // Init publishing of static attributes
+    _attribsChangeDynamic = true; // Init publishing of dynamic attributes
   }
 
   /*
@@ -86,8 +88,6 @@ public:
   {
     SERIAL_TITLE("begin");
     _wifi = wifi;
-    _attribsStaticChange = true; // Init publishing of static attributes
-    _attribsChange = true;  // Init publishing of dymaic attributes
   }
 
   inline void callbacks(RPC_Callback *callbacks = 0, size_t callbacks_size = 0)
@@ -119,21 +119,21 @@ public:
         subscribe();
       }
       // Publish static client attributes at change
-      if (isSuccess() && _attribsStaticChange)
+      if (isSuccess() && _attribsChangeStatic)
       {
         publishAttribsStatic();
         if (isSuccess())
         {
-         _attribsStaticChange = false;
+         _attribsChangeStatic = false;
         }
       }
       // Publish dynamic client attributes at change
-      if (isSuccess() && _attribsChange)
+      if (isSuccess() && _attribsChangeDynamic)
       {
-        publishAttribs();
+        publishAttribsDynamic();
         if (isSuccess())
         {
-          _attribsChange = false;
+          _attribsChangeDynamic = false;
         }
       }
       // Publish telemetry
@@ -266,12 +266,12 @@ public:
 
   // Abstract methods
   virtual ResultCodes publishMeasures() = 0;
-  virtual ResultCodes publishAttribs() = 0;
+  virtual ResultCodes publishAttribsDynamic() = 0;
   virtual ResultCodes publishAttribsStatic() = 0;
+  virtual void setAttribChange(byte) = 0;
 
   // Setters
   inline void setPeriod(unsigned long period) { _timer->setPeriod(period); };
-  inline void setAttribsChange() { _attribsChange = true; }
 
   // Getters
   inline unsigned long getPeriod() { return _timer->getPeriod(); };
@@ -296,8 +296,8 @@ private:
   const char *_server;
   const char *_token;
   bool _subscribed;
-  bool _attribsChange;
-  bool _attribsStaticChange;
+  bool _attribsChangeDynamic;
+  bool _attribsChangeStatic;
   byte _fails = Params::PARAM_FAILS;
   unsigned long _tsRetry = millis();
   // Handlers
@@ -309,6 +309,7 @@ private:
 protected:
   gbj_timer *_timer;
   gbj_appwifi *_wifi;
+  inline void setAttribChangeDynamic() { _attribsChangeDynamic = true; }
   inline void startTimer(unsigned long period)
   {
     SERIAL_VALUE("startTimer", period);
