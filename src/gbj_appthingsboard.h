@@ -266,8 +266,8 @@ public:
 
   // Abstract methods
   virtual ResultCodes publishMeasures() = 0;
-  virtual ResultCodes publishAttribsDynamic() = 0;
   virtual ResultCodes publishAttribsStatic() = 0;
+  virtual ResultCodes publishAttribsDynamic() = 0;
   virtual void setAttribChange(byte) = 0;
 
   // Setters

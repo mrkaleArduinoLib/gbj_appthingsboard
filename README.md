@@ -53,9 +53,10 @@ Other constants and enumerations are inherited from the parent library.
 - [publishMeasures()](#publish)
 - [publishMeasuresBatch()](#publishMeasuresBatch)
 - [publishAttrib()](#publishAttrib)
-- [publishAttribs()](#publish)
+- [publishAttribsStatic()](#publish)
+- [publishAttribsDynamic()](#publish)
 - [publishAttribsBatch()](#publishAttribsBatch)
-- [setAttribsChange()](#setAttribsChange)
+- [setAttribChange()](#setAttribChange)
 - [setPeriod()](#period)
 - [getPeriod()](#period)
 - [isConnected()](#isConnected)
@@ -296,7 +297,9 @@ The method publishes input key-value pair as the clilent attributes of the devic
 Some of [result or error codes](#constants) from the parent class.
 
 #### See also
-[publishAttribs()](#publish)
+[publishAttribsStatic()](#publish)
+
+[publishAttribsDynamic()](#publish)
 
 [publishAttribsBatch()](#publishAttribsBatch)
 
@@ -343,23 +346,27 @@ publishAttribsBatch(data, data_items);
 #### See also
 [publishAttrib()](#publishAttrib)
 
-[publishAttribs()](#publish)
+[publishAttribsStatic()](#publish)
+
+[publishAttribsDynamic()](#publish)
 
 [Back to interface](#interface)
 
 
 <a id="publish"></a>
 
-## publishMeasures(), publishAttribs()
+## publishMeasures(), publishAttribsStatic(), publishAttribsDynamic()
 
 #### Description
-The virtual methods that should implement every child class derived from this library class.
+The virtual methods that every child class derived from this library class should implement.
 - The method `publishMeasures()` should contain either multiple calls of the method [publishMeasure()](#publishMeasure) or the single call of the method [publishMeasuresBatch()](#publishMeasuresBatch) for all desired telemetry data items of the device.
-- The method `publishAttribs()` should contain either multiple calls of the method [publishAttrib()](#publishAttrib) or the single call of the method [publishAttribsBatch()](#publishAttribsBatch ) for all desired client attributes of the device.
+- The method `publishAttribsStatic()` should contain either multiple calls of the method [publishAttrib()](#publishAttrib) or the single call of the method [publishAttribsBatch()](#publishAttribsBatch ) for all desired static client attributes of the device. Static attributes cannot be changed from IoT platform by RPC. They are set and published at boot time of the device together at once.
+- The method `publishAttribsDynamic()` should contain either multiple calls of the method [publishAttrib()](#publishAttrib) or the single call of the method [publishAttribsBatch()](#publishAttribsBatch ) for all desired dynamic client attributes of the device. Dynamic attributes can be changed from IoT platform by RPC. They are set and published dynamicli and individually.
 
 #### Syntax
     ResultCodes publishMeasures()
-    ResultCodes publishAttribs()
+    ResultCodes publishAttribsStatic()
+    ResultCodes publishAttribsDynamic()
 
 #### Parameters
 None
@@ -389,20 +396,23 @@ The methods are just straitforward implementation of the virual methods from the
 [Back to interface](#interface)
 
 
-<a id="setAttribsChange"></a>
+<a id="setAttribChange"></a>
 
-## setAttribsChange()
+## setAttribChange()
 
 #### Description
-The method sets an internal flag about changing some device client attribute in order to refresh it in the IoT platform.
-- The method realizes receiving a signal from a sketch, usually in a RPC method for setting parameters, that some attribute has changed.
-- The method causes that all device client attributes are publish at once regardless some of them has not changed their value.
+The virtual method that every child class derived from this library class should implement.
+The method sets an internal flag about changing particular dynamic device client attribute in order to refresh it in the IoT platform.
+- The method realizes receiving a signal from a sketch, usually in an RPC method for setting the parameter, that the attribute has changed.
+- The method causes that particular device client attribute is publish individually, so that all dynamic attributes have real time stamp in the IoT platform.
 
 #### Syntax
-    void setAttribsChange()
+    void setAttribChange(byte idx)
 
 #### Parameters
-None
+- **idx**: Index (sequence order counting from zero) of a dynamic attribute usually defined as preprocessor macro.
+  - *Valid values*: Non-negative integer
+  - *Default value*: none
 
 #### Returns
 None

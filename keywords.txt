@@ -17,8 +17,10 @@ publishMeasure	KEYWORD2
 publishMeasures	KEYWORD2
 publishMeasuresBatch	KEYWORD2
 publishAttrib	KEYWORD2
-publishAttribs	KEYWORD2
+publishAttribsStatic	KEYWORD2
+publishAttribsDynamic	KEYWORD2
 publishAttribsBatch	KEYWORD2
+setAttribChange	KEYWORD2
 setPeriod	KEYWORD2
 getPeriod	KEYWORD2
 isConnected	KEYWORD2
