@@ -22,8 +22,8 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
       else
       {
         SERIAL_ACTION_END("Timeout");
-        _fails--;
         _tsRetry = millis();
+        _fails--;
         SERIAL_VALUE("fails", Params::PARAM_FAILS - _fails);
          return setLastResult(ResultCodes::ERROR_CONNECT);
       }

@@ -5,6 +5,7 @@ This is an application library, which is used usually as a project library for p
 
 - Library specifies (inherits from) the system `gbj_appbase` library.
 - Library utilizes error handling from the parent class.
+- If the connection to IoT platform fails for 5 subsequent attempts with timeout, the library postpones connecting to the platform for 15 minutes in order not to block or slow down main funcionality and then tries connecting again.
 - The class from the library is not intended to be used directly in a sketch, just as a parent class for specific device libraries communicating with IoT platform.
 
 
