@@ -10,10 +10,10 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   }
   uint8_t counter = Params::PARAM_ATTEMPS;
   SERIAL_ACTION("Connecting to TB...");
-  _subscribed = false;
-  if (_fails)
+  subscribed_ = false;
+  if (fails_)
   {
-    while (!_thingsboard->connect(_server, _token))
+    while (!thingsboard_->connect(server_, token_))
     {
       if (counter--)
       {
@@ -22,19 +22,19 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
       else
       {
         SERIAL_ACTION_END("Timeout");
-        _tsRetry = millis();
-        _fails--;
-        SERIAL_VALUE("fails", Params::PARAM_FAILS - _fails);
+        tsRetry_ = millis();
+        fails_--;
+        SERIAL_VALUE("fails", Params::PARAM_FAILS - fails_);
          return setLastResult(ResultCodes::ERROR_CONNECT);
       }
       SERIAL_DOT
     }
     SERIAL_ACTION_END("Connected");
-    SERIAL_VALUE("server", _server);
-    SERIAL_VALUE("token", _token);
-    SERIAL_VALUE("fails", Params::PARAM_FAILS - _fails);
-    _fails = Params::PARAM_FAILS;
-    _tsRetry = millis();
+    SERIAL_VALUE("server", server_);
+    SERIAL_VALUE("token", token_);
+    SERIAL_VALUE("fails", Params::PARAM_FAILS - fails_);
+    fails_ = Params::PARAM_FAILS;
+    tsRetry_ = millis();
     setLastResult();
   }
   else
@@ -42,11 +42,11 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     SERIAL_ACTION_END("Ignored");
     setLastResult(ResultCodes::ERROR_CONNECT);
     // Retry connection after a while since recent connection or failure
-    if (millis() - _tsRetry > Timing::PERIOD_RETRY)
+    if (millis() - tsRetry_ > Timing::PERIOD_RETRY)
     {
       SERIAL_TITLE("Reset retry");
-      _fails = Params::PARAM_FAILS;
-      _tsRetry = millis();
+      fails_ = Params::PARAM_FAILS;
+      tsRetry_ = millis();
     }
   }
   return getLastResult();
@@ -61,10 +61,10 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::subscribe()
   // All consequent data processing will happen in callbacks as denoted by
   // callbacks[] array.
   SERIAL_ACTION("Subscribing for RPC...");
-  if (_thingsboard->RPC_Subscribe(_callbacks, _callbacks_size))
+  if (thingsboard_->RPC_Subscribe(callbacks_, _callbacks_size))
   {
     SERIAL_ACTION_END("OK");
-    _subscribed = true;
+    subscribed_ = true;
     return setLastResult();
   }
   else

@@ -63,11 +63,11 @@ public:
   */
   inline gbj_appthingsboard(const char *server, const char *token)
   {
-    _server = server;
-    _token = token;
-    _timer = new gbj_timer(0);
-    _attribsChangeStatic = true; // Init publishing of static attributes
-    _attribsChangeDynamic = true; // Init publishing of dynamic attributes
+    server_ = server;
+    token_ = token;
+    timer_ = new gbj_timer(0);
+    attribsChangeStatic_ = true; // Init publishing of static attributes
+    attribsChangeDynamic_ = true; // Init publishing of dynamic attributes
   }
 
   /*
@@ -87,22 +87,22 @@ public:
   inline void begin(gbj_appwifi *wifi)
   {
     SERIAL_TITLE("begin");
-    _wifi = wifi;
+    wifi_ = wifi;
   }
 
   inline void callbacks(RPC_Callback *callbacks = 0, size_t callbacks_size = 0)
   {
-    _callbacks = callbacks;
+    callbacks_ = callbacks;
     _callbacks_size = callbacks_size;
     SERIAL_VALUE("callbacks", _callbacks_size);
   }
 
   inline void run()
   {
-    if (_timer->run())
+    if (timer_->run())
     {
       // Check external handlers
-      if (!_wifi->isConnected())
+      if (!wifi_->isConnected())
       {
         SERIAL_VALUE("run", "No Wifi");
         return;
@@ -119,21 +119,21 @@ public:
         subscribe();
       }
       // Publish static client attributes at change
-      if (isSuccess() && _attribsChangeStatic)
+      if (isSuccess() && attribsChangeStatic_)
       {
         publishAttribsStatic();
         if (isSuccess())
         {
-         _attribsChangeStatic = false;
+         attribsChangeStatic_ = false;
         }
       }
       // Publish dynamic client attributes at change
-      if (isSuccess() && _attribsChangeDynamic)
+      if (isSuccess() && attribsChangeDynamic_)
       {
         publishAttribsDynamic();
         if (isSuccess())
         {
-          _attribsChangeDynamic = false;
+          attribsChangeDynamic_ = false;
         }
       }
       // Publish telemetry
@@ -149,7 +149,7 @@ public:
     }
     // General loop delay. If zero, connecting to WiFi AP will timeout.
     delay(20);
-    _thingsboard->loop();
+    thingsboard_->loop();
   }
 
   /*
@@ -177,7 +177,7 @@ public:
   {
     SERIAL_ACTION("publishMeasure: ");
     SERIAL_CHAIN2(key, "...");
-    if (_thingsboard->sendTelemetryData(key, value))
+    if (thingsboard_->sendTelemetryData(key, value))
     {
       SERIAL_ACTION_END("OK");
       return setLastResult();
@@ -195,7 +195,7 @@ public:
   {
     SERIAL_ACTION("publishMeasuresBatch");
     SERIAL_CHAIN3(" (", data_count, ")...");
-    if (_thingsboard->sendTelemetry(data, data_count))
+    if (thingsboard_->sendTelemetry(data, data_count))
     {
       SERIAL_ACTION_END("OK");
       return setLastResult();
@@ -233,7 +233,7 @@ public:
   {
     SERIAL_ACTION("publishAttrib: ");
     SERIAL_CHAIN2(attrName, "...");
-    if (_thingsboard->sendAttributeData(attrName, value))
+    if (thingsboard_->sendAttributeData(attrName, value))
     {
       SERIAL_ACTION_END("OK");
       return setLastResult();
@@ -251,7 +251,7 @@ public:
   {
     SERIAL_ACTION("publishAttribsBatch");
     SERIAL_CHAIN3(" (", data_count, ")...");
-    if (_thingsboard->sendAttributes(data, data_count))
+    if (thingsboard_->sendAttributes(data, data_count))
     {
       SERIAL_ACTION_END("OK");
       return setLastResult();
@@ -271,12 +271,12 @@ public:
   virtual void setAttribChange(byte) = 0;
 
   // Setters
-  inline void setPeriod(unsigned long period) { _timer->setPeriod(period); };
+  inline void setPeriod(unsigned long period) { timer_->setPeriod(period); };
 
   // Getters
-  inline unsigned long getPeriod() { return _timer->getPeriod(); };
-  inline bool isConnected() { return _thingsboard->connected(); }
-  inline bool isSubscribed() { return _subscribed; }
+  inline unsigned long getPeriod() { return timer_->getPeriod(); };
+  inline bool isConnected() { return thingsboard_->connected(); }
+  inline bool isSubscribed() { return subscribed_; }
 
 private:
   enum Timing : unsigned long
@@ -290,31 +290,31 @@ private:
     PARAM_FAILS = 5,
   };
   size_t _callbacks_size;
-  WiFiClient _wificlient;
-  ThingsBoardSized<256, 16> *_thingsboard =
-    new ThingsBoardSized<256, 16>(_wificlient);
-  const char *_server;
-  const char *_token;
-  bool _subscribed;
-  bool _attribsChangeDynamic;
-  bool _attribsChangeStatic;
-  byte _fails = Params::PARAM_FAILS;
-  unsigned long _tsRetry = millis();
+  WiFiClient wificlient_;
+  ThingsBoardSized<256, 16> *thingsboard_ =
+    new ThingsBoardSized<256, 16>(wificlient_);
+  const char *server_;
+  const char *token_;
+  bool subscribed_;
+  bool attribsChangeDynamic_;
+  bool attribsChangeStatic_;
+  byte fails_ = Params::PARAM_FAILS;
+  unsigned long tsRetry_ = millis();
   // Handlers
-  RPC_Callback *_callbacks;
+  RPC_Callback *callbacks_;
   // Methods
   ResultCodes connect();
   ResultCodes subscribe();
 
 protected:
-  gbj_timer *_timer;
-  gbj_appwifi *_wifi;
-  inline void setAttribChangeDynamic() { _attribsChangeDynamic = true; }
+  gbj_timer *timer_;
+  gbj_appwifi *wifi_;
+  inline void setAttribChangeDynamic() { attribsChangeDynamic_ = true; }
   inline void startTimer(unsigned long period)
   {
     SERIAL_VALUE("startTimer", period);
     setPeriod(period);
-    _timer->resume();
+    timer_->resume();
   }
 };
 
