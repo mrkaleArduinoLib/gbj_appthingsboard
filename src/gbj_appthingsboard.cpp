@@ -8,11 +8,11 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     SERIAL_TITLE("Connected");
     return setLastResult();
   }
-  uint8_t counter = Params::PARAM_ATTEMPS;
   SERIAL_ACTION("Connecting to TB...");
   subscribed_ = false;
   if (fails_)
   {
+    byte counter = Params::PARAM_ATTEMPS;
     unsigned long tsConnStart = millis();
     while (!thingsboard_->connect(server_, token_))
     {
@@ -23,9 +23,10 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
       tbConnTime.cnt++;
       tbConnTime.isFail = true;
       // Evaluate connection failure
-      if (counter--)
+      if (counter)
       {
-        delay(Timing::PERIOD_CONNECT);
+        // delay(Timing::PERIOD_CONNECT);
+        counter--;
       }
       else
       {
@@ -35,7 +36,8 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
         SERIAL_VALUE("fails", Params::PARAM_FAILS - fails_);
          return setLastResult(ResultCodes::ERROR_CONNECT);
       }
-      SERIAL_DOT
+      SERIAL_DOT;
+      tsConnStart = millis();
     }
     SERIAL_ACTION_END("Connected");
     SERIAL_VALUE("server", server_);
@@ -53,9 +55,9 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     if (millis() - tsRetry_ > Timing::PERIOD_RETRY)
     {
       SERIAL_TITLE("Reset retry");
+      tbConnTime.rts++;
       fails_ = Params::PARAM_FAILS;
       tsRetry_ = millis();
-      tbConnTime.rts++;
     }
   }
   return getLastResult();
