@@ -20,6 +20,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
       tbConnTime.cur = millis() - tsConnStart;
       tbConnTime.min = min(tbConnTime.min, tbConnTime.cur);
       tbConnTime.max = max(tbConnTime.max, tbConnTime.cur);
+      tbConnTime.cnt++;
       tbConnTime.isFail = true;
       // Evaluate connection failure
       if (counter--)
@@ -54,6 +55,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
       SERIAL_TITLE("Reset retry");
       fails_ = Params::PARAM_FAILS;
       tsRetry_ = millis();
+      tbConnTime.rts++;
     }
   }
   return getLastResult();
