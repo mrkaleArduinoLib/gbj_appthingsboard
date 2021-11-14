@@ -13,8 +13,15 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   subscribed_ = false;
   if (fails_)
   {
+    unsigned long tsConnStart = millis();
     while (!thingsboard_->connect(server_, token_))
     {
+      // Calculate connection statistics
+      tbConnTime.cur = millis() - tsConnStart;
+      tbConnTime.min = min(tbConnTime.min, tbConnTime.cur);
+      tbConnTime.max = max(tbConnTime.max, tbConnTime.cur);
+      tbConnTime.isFail = true;
+      // Evaluate connection failure
       if (counter--)
       {
         delay(Timing::PERIOD_CONNECT);

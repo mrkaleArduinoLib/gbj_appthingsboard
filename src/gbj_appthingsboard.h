@@ -272,11 +272,16 @@ public:
 
   // Setters
   inline void setPeriod(unsigned long period) { timer_->setPeriod(period); };
+  inline void resetConnFail() { tbConnTime.isFail = false; }
 
   // Getters
   inline unsigned long getPeriod() { return timer_->getPeriod(); };
   inline bool isConnected() { return thingsboard_->connected(); }
   inline bool isSubscribed() { return subscribed_; }
+  inline unsigned long getConnFailCur() { return tbConnTime.cur; };
+  inline unsigned long getConnFailMin() { return tbConnTime.min; };
+  inline unsigned long getConnFailMax() { return tbConnTime.max; };
+  inline bool getConnFail() { return tbConnTime.isFail; };
 
 private:
   enum Timing : unsigned long
@@ -289,6 +294,13 @@ private:
     PARAM_ATTEMPS = 10,
     PARAM_FAILS = 5,
   };
+  struct Connection
+  {
+    unsigned long cur;
+    unsigned long min = Timing::PERIOD_RETRY;
+    unsigned long max = 0;
+    bool isFail;
+  } tbConnTime;
   size_t _callbacks_size;
   WiFiClient wificlient_;
   ThingsBoardSized<256, 16> *thingsboard_ =
