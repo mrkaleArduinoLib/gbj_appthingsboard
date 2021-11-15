@@ -33,8 +33,9 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
         SERIAL_ACTION_END("Timeout");
         tsRetry_ = millis();
         fails_--;
+        tbConnTime.err++;
         SERIAL_VALUE("fails", Params::PARAM_FAILS - fails_);
-         return setLastResult(ResultCodes::ERROR_CONNECT);
+        return setLastResult(ResultCodes::ERROR_CONNECT);
       }
       SERIAL_DOT;
       tsConnStart = millis();

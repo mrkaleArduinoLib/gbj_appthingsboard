@@ -279,6 +279,7 @@ public:
   inline bool isConnected() { return thingsboard_->connected(); }
   inline bool isSubscribed() { return subscribed_; }
   inline unsigned int getConnFailRetries() { return tbConnTime.rts; };
+  inline unsigned int getConnFailErrors() { return tbConnTime.err; };
   inline unsigned int getConnFailCnt() { return tbConnTime.cnt; };
   inline unsigned long getConnFailCur() { return tbConnTime.cur; };
   inline unsigned long getConnFailMin() { return tbConnTime.min; };
@@ -289,16 +290,17 @@ private:
   enum Timing : unsigned long
   {
     PERIOD_CONNECT = 500,
-    PERIOD_RETRY = 900000,
+    PERIOD_RETRY = 300000,
   };
   enum Params : byte
   {
-    PARAM_ATTEMPS = 10,
-    PARAM_FAILS = 5,
+    PARAM_ATTEMPS = 5,
+    PARAM_FAILS = 3,
   };
   struct Connection
   {
     unsigned int rts; // Retries (waits)
+    unsigned int err; // Fails
     unsigned int cnt;
     unsigned long cur;
     unsigned long min = Timing::PERIOD_RETRY;
