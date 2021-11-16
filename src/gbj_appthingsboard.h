@@ -294,8 +294,8 @@ private:
   };
   enum Params : byte
   {
-    PARAM_ATTEMPS = 5,
-    PARAM_FAILS = 3,
+    PARAM_ATTEMPS = 3,
+    PARAM_FAILS = 2,
   };
   struct Connection
   {

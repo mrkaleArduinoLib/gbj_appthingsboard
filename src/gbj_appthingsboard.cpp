@@ -23,12 +23,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
       tbConnTime.cnt++;
       tbConnTime.isFail = true;
       // Evaluate connection failure
-      if (counter)
-      {
-        // delay(Timing::PERIOD_CONNECT);
-        counter--;
-      }
-      else
+      if (--counter == 0)
       {
         SERIAL_ACTION_END("Timeout");
         tsRetry_ = millis();
