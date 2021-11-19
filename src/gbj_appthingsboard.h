@@ -303,9 +303,15 @@ private:
     unsigned int err; // Fails
     unsigned int cnt;
     unsigned long cur;
+    unsigned long max;
     unsigned long min = Timing::PERIOD_RETRY;
-    unsigned long max = 0;
     bool isFail;
+    void reset()
+    {
+      rts = err = cnt = cur = max = 0;
+      min = Timing::PERIOD_RETRY;
+      isFail = false;
+    }
   } tbConnTime;
   size_t _callbacks_size;
   WiFiClient wificlient_;
