@@ -1,7 +1,7 @@
 {
   "name": "gbj_appthingsboard",
   "keywords": "application",
-  "description": "Library executes connection to the ThingsBoard IoT platform.",
+  "description": "Library executes connection to ThingsBoard IoT platform over MQTT.",
   "repository": {
     "type": "git",
     "url": "https://github.com/mrkaleArduinoLib/gbj_appthingsboard.git"

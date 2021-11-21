@@ -1,7 +1,7 @@
 <a id="library"></a>
 
 # gbj\_appthingsboard
-This is an application library, which is used usually as a project library for particular PlatformIO project. However; in every project utilizing the ThingsBoard IoT platform should be copied the same library, so that it is located in central library storage.
+This is an application library, which is used usually as a project library for particular PlatformIO project. However; in every project utilizing the _ThingsBoard IoT platform_ should be copied the same library, so that it is located in central library storage.
 
 - Library specifies (inherits from) the system `gbj_appbase` library.
 - Library utilizes error handling from the parent class.
@@ -78,7 +78,7 @@ Constructor creates the class instance object and initiates internal resources.
 
 #### Parameters
 
-- **server**: Pointer to an address of ThingsBoard server. It should be either IP address of webk address.
+- **server**: Pointer to an address of ThingsBoard server. It should be either IP address of web address.
   - *Valid values*: Constant pointer to string
   - *Default value*: none
 
