@@ -97,60 +97,7 @@ public:
     SERIAL_VALUE("callbacks", _callbacks_size);
   }
 
-  inline void run()
-  {
-    if (timer_->run())
-    {
-      // Check external handlers
-      if (!wifi_->isConnected())
-      {
-        SERIAL_VALUE("run", "No Wifi");
-        return;
-      }
-      setLastResult();
-      // Connect
-      if (isSuccess())
-      {
-        connect();
-      }
-      // Subscribe
-      if (isSuccess())
-      {
-        subscribe();
-      }
-      // Publish static client attributes at change
-      if (isSuccess() && attribsChangeStatic_)
-      {
-        publishAttribsStatic();
-        if (isSuccess())
-        {
-         attribsChangeStatic_ = false;
-        }
-      }
-      // Publish dynamic client attributes at change
-      if (isSuccess() && attribsChangeDynamic_)
-      {
-        publishAttribsDynamic();
-        if (isSuccess())
-        {
-          attribsChangeDynamic_ = false;
-        }
-      }
-      // Publish telemetry
-      if (isSuccess())
-      {
-        publishMeasures();
-      }
-      // Error
-      if (isError())
-      {
-        SERIAL_VALUE("error", getLastResult());
-      }
-    }
-    // General loop delay. If zero, connecting to WiFi AP will timeout.
-    delay(20);
-    thingsboard_->loop();
-  }
+  void run();
 
   /*
     Publish telemetry data item.
