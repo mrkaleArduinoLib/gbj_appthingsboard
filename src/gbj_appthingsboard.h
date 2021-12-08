@@ -93,8 +93,8 @@ public:
   inline void callbacks(RPC_Callback *callbacks = 0, size_t callbacks_size = 0)
   {
     callbacks_ = callbacks;
-    _callbacks_size = callbacks_size;
-    SERIAL_VALUE("callbacks", _callbacks_size);
+    callbacks_size_ = callbacks_size;
+    SERIAL_VALUE("callbacks", callbacks_size_);
   }
 
   void run();
@@ -260,7 +260,7 @@ private:
       isFail = false;
     }
   } tbConnTime;
-  size_t _callbacks_size;
+  size_t callbacks_size_;
   WiFiClient wificlient_;
   ThingsBoardSized<256, 16> *thingsboard_ =
     new ThingsBoardSized<256, 16>(wificlient_);
