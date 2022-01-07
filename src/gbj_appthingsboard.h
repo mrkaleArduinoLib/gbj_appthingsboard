@@ -67,7 +67,6 @@ public:
     token_ = token;
     timer_ = new gbj_timer(0);
     attribsChangeStatic_ = true; // Init publishing of static attributes
-    attribsChangeDynamic_ = true; // Init publishing of dynamic attributes
   }
 
   /*
@@ -215,7 +214,6 @@ public:
   virtual ResultCodes publishMeasures() = 0;
   virtual ResultCodes publishAttribsStatic() = 0;
   virtual ResultCodes publishAttribsDynamic() = 0;
-  virtual void setAttribChange(byte) = 0;
 
   // Setters
   inline void setPeriod(unsigned long period) { timer_->setPeriod(period); };
@@ -267,7 +265,6 @@ private:
   const char *server_;
   const char *token_;
   bool subscribed_;
-  bool attribsChangeDynamic_;
   bool attribsChangeStatic_;
   byte fails_ = Params::PARAM_FAILS;
   unsigned long tsRetry_ = millis();
@@ -280,7 +277,6 @@ private:
 protected:
   gbj_timer *timer_;
   gbj_appwifi *wifi_;
-  inline void setAttribChangeDynamic() { attribsChangeDynamic_ = true; }
   inline void startTimer(unsigned long period)
   {
     SERIAL_VALUE("startTimer", period);

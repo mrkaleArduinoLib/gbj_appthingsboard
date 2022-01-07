@@ -112,13 +112,9 @@ void gbj_appthingsboard::run()
       }
     }
     // Publish dynamic client attributes at change
-    if (isSuccess() && attribsChangeDynamic_)
+    if (isSuccess())
     {
       publishAttribsDynamic();
-      if (isSuccess())
-      {
-        attribsChangeDynamic_ = false;
-      }
     }
     // Publish telemetry
     if (isSuccess())
