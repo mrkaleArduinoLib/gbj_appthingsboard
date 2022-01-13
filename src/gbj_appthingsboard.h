@@ -435,6 +435,9 @@ protected:
       return result;
     }
   };
+  //****************************************************************************
+  // Parameters definition
+  //****************************************************************************
   // Generic parameters initiated at compile time.
   // Compiler build macros or included static data.
   Parameter version = Parameter(versionStatic, MAIN_VERSION);
@@ -445,24 +448,13 @@ protected:
   Parameter hostname = Parameter(hostnameStatic);
   Parameter addressIP = Parameter(addressIPStatic);
   Parameter addressMAC = Parameter(addressMACStatic);
-  // Temperature measurement
-  Parameter tempResBit = Parameter(tempResBitStatic);
-  Parameter tempResDeg = Parameter(tempResDegStatic);
-  Parameter tempSmooth = Parameter(tempSmoothStatic);
-  Parameter tempSensors = Parameter(tempSensorsStatic);
 
   // Generic EEPROM parameters updated at run time immediatelly
   Parameter periodPublish = Parameter(periodPublishPrm);
   Parameter mcuRestarts = Parameter(mcuRestartsPrm);
-  Parameter periodTemp = Parameter(periodTempPrm);
-  Parameter tempHysteresis = Parameter(tempHysteresisPrm);
-  Parameter tempAntifrost = Parameter(tempAntifrostPrm);
-  Parameter tempHeating = Parameter(tempHeatingPrm);
-  Parameter heaterMode = Parameter(heaterModePrm);
 
   // Telemetry parameters updated periodically
   Parameter rssi = Parameter(rssiTelem);
-  Parameter temperature = Parameter(temperatureTelem);
   // Telemetry -- ThingsBoard connection
   Parameter connRetries = Parameter(connRetriesTelem);
   Parameter connErrors = Parameter(connErrorsTelem);
@@ -470,7 +462,7 @@ protected:
   Parameter connCur = Parameter(connCurTelem);
   Parameter connMin = Parameter(connMinTelem);
   Parameter connMax = Parameter(connMaxTelem);
-
+  //****************************************************************************
   gbj_timer *timer_;
   gbj_appwifi *wifi_;
   inline void startTimer(unsigned long period)
