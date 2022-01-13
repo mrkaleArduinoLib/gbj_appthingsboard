@@ -29,6 +29,7 @@
   #error !!! Only platforms with WiFi are suppored !!!
 #endif
 #include "ThingsBoard.h"
+#include "config_params.h"
 #include "gbj_appbase.h"
 #include "gbj_appwifi.h"
 #include "gbj_serial_debug.h"
@@ -66,7 +67,6 @@ public:
     server_ = server;
     token_ = token;
     timer_ = new gbj_timer(0);
-    attribsChangeStatic_ = true; // Init publishing of static attributes
   }
 
   /*
@@ -96,7 +96,31 @@ public:
     SERIAL_VALUE("callbacks", callbacks_size_);
   }
 
-  void run();
+  inline void run()
+  {
+    connect();
+    if (isConnected())
+    {
+      if (!flStaticsPublished_)
+      {
+        publishAttribsStatic();
+        flStaticsPublished_ = isSuccess(); // Only at very beginning
+      }
+      publishAttribsDynamic();
+      publishEvents();
+    }
+    // Publish telemetry
+    if (timer_->run())
+    {
+      if (isConnected())
+      {
+        publishMeasures();
+      }
+    }
+    // General loop delay. If zero, connecting to WiFi AP will timeout.
+    delay(20);
+    thingsboard_->loop();
+  }
 
   /*
     Publish telemetry data item.
@@ -137,7 +161,7 @@ public:
   }
 
   inline ResultCodes publishMeasuresBatch(const Telemetry *data,
-                                         size_t data_count)
+                                          size_t data_count)
   {
     SERIAL_ACTION("publishMeasuresBatch");
     SERIAL_CHAIN3(" (", data_count, ")...");
@@ -211,6 +235,7 @@ public:
   }
 
   // Abstract methods
+  virtual ResultCodes publishEvents() = 0;
   virtual ResultCodes publishMeasures() = 0;
   virtual ResultCodes publishAttribsStatic() = 0;
   virtual ResultCodes publishAttribsDynamic() = 0;
@@ -222,7 +247,7 @@ public:
   // Getters
   inline unsigned long getPeriod() { return timer_->getPeriod(); };
   inline bool isConnected() { return thingsboard_->connected(); }
-  inline bool isSubscribed() { return subscribed_; }
+  inline bool isSubscribed() { return flSubscribed_; }
   inline unsigned int getConnFailRetries() { return tbConnTime.rts; };
   inline unsigned int getConnFailErrors() { return tbConnTime.err; };
   inline unsigned int getConnFailCnt() { return tbConnTime.cnt; };
@@ -230,6 +255,236 @@ public:
   inline unsigned long getConnFailMin() { return tbConnTime.min; };
   inline unsigned long getConnFailMax() { return tbConnTime.max; };
   inline bool getConnFail() { return tbConnTime.isFail; };
+
+protected:
+  enum Datatype
+  {
+    TYPE_NONE,
+    TYPE_BOOL,
+    TYPE_INT,
+    TYPE_UINT,
+    TYPE_REAL,
+    TYPE_STR,
+  };
+  union Data
+  {
+    const char *str;
+    bool boolean;
+    long integer;
+    unsigned long big;
+    float real;
+  };
+  struct Parameter
+  {
+    const char *name;
+    Datatype type;
+    Data val;
+    bool ignore;
+    bool used;
+    Parameter()
+      : name(NULL)
+      , type(Datatype::TYPE_NONE)
+      , val()
+    {
+    }
+    Parameter(const char *key)
+      : name(key)
+    {
+    }
+    Parameter(const char *key, const char *value)
+      : name(key)
+      , type(Datatype::TYPE_STR)
+      , val()
+    {
+      val.str = value;
+    }
+    Parameter(const char *key, String value)
+      : name(key)
+      , type(Datatype::TYPE_STR)
+      , val()
+    {
+      val.str = value.c_str();
+    }
+    Parameter(const char *key, bool value)
+      : name(key)
+      , type(Datatype::TYPE_BOOL)
+      , val()
+    {
+      val.boolean = value;
+    }
+    Parameter(const char *key, int value)
+      : name(key)
+      , type(Datatype::TYPE_INT)
+      , val()
+    {
+      val.integer = value;
+    }
+    Parameter(const char *key, long value)
+      : name(key)
+      , type(Datatype::TYPE_INT)
+      , val()
+    {
+      val.integer = value;
+    }
+    Parameter(const char *key, unsigned int value)
+      : name(key)
+      , type(Datatype::TYPE_UINT)
+      , val()
+    {
+      val.big = value;
+    }
+    Parameter(const char *key, unsigned long value)
+      : name(key)
+      , type(Datatype::TYPE_UINT)
+      , val()
+    {
+      val.big = value;
+    }
+    Parameter(const char *key, float value)
+      : name(key)
+      , type(Datatype::TYPE_REAL)
+      , val()
+    {
+      val.real = value;
+    }
+    void setIgnore() { ignore = true; }
+    bool getIgnore() { return ignore; }
+    void set()
+    {
+      type = Datatype::TYPE_NONE;
+      ignore = false;
+    }
+    void set(const char *value)
+    {
+      type = Datatype::TYPE_STR;
+      ignore = used && (val.str == value);
+      val.str = value;
+    }
+    void set(String value)
+    {
+      type = Datatype::TYPE_STR;
+      ignore = used && (val.str == value.c_str());
+      val.str = value.c_str();
+    }
+    void set(bool value)
+    {
+      type = Datatype::TYPE_BOOL;
+      ignore = used && (val.boolean == value);
+      val.boolean = value;
+    }
+    void set(int value)
+    {
+      type = Datatype::TYPE_INT;
+      ignore = used && (val.integer == value);
+      val.integer = value;
+    }
+    void set(long value)
+    {
+      type = Datatype::TYPE_INT;
+      ignore = used && (val.integer == value);
+      val.integer = value;
+    }
+    void set(unsigned int value)
+    {
+      type = Datatype::TYPE_UINT;
+      ignore = used && (val.big == value);
+      val.integer = value;
+    }
+    void set(unsigned long value)
+    {
+      type = Datatype::TYPE_UINT;
+      ignore = used && (val.big == value);
+      val.integer = value;
+    }
+    void set(float value)
+    {
+      type = Datatype::TYPE_REAL;
+      ignore = used && (val.real == value);
+      val.real = value;
+    }
+    String get()
+    {
+      String result = "";
+      switch (type)
+      {
+        case Datatype::TYPE_STR:
+          result = String(val.str);
+          break;
+
+        case Datatype::TYPE_BOOL:
+          result = val.boolean ? SERIAL_F("true") : SERIAL_F("false");
+          break;
+
+        case Datatype::TYPE_INT:
+          result = String(val.integer);
+          break;
+
+        case Datatype::TYPE_UINT:
+          result = String(val.big);
+          break;
+
+        case Datatype::TYPE_REAL:
+          result = String(val.real, 4);
+          break;
+
+        case Datatype::TYPE_NONE:
+          result = String("n/a");
+          break;
+      }
+      used = true;
+      return result;
+    }
+  };
+  // Generic parameters initiated at compile time.
+  // Compiler build macros or included static data.
+  Parameter version = Parameter(versionStatic, MAIN_VERSION);
+  Parameter broker = Parameter(brokerStatic, BROKER);
+  Parameter portOTA = Parameter(portOTAStatic, OTA_PORT);
+
+  // Generic parameters initiated at boot once
+  Parameter hostname = Parameter(hostnameStatic);
+  Parameter addressIP = Parameter(addressIPStatic);
+  Parameter addressMAC = Parameter(addressMACStatic);
+  // Temperature measurement
+  Parameter tempResBit = Parameter(tempResBitStatic);
+  Parameter tempResDeg = Parameter(tempResDegStatic);
+  Parameter tempSmooth = Parameter(tempSmoothStatic);
+  Parameter tempSensors = Parameter(tempSensorsStatic);
+
+  // Generic EEPROM parameters updated at run time immediatelly
+  Parameter periodPublish = Parameter(periodPublishPrm);
+  Parameter mcuRestarts = Parameter(mcuRestartsPrm);
+  Parameter periodTemp = Parameter(periodTempPrm);
+  Parameter tempHysteresis = Parameter(tempHysteresisPrm);
+  Parameter tempAntifrost = Parameter(tempAntifrostPrm);
+  Parameter tempHeating = Parameter(tempHeatingPrm);
+  Parameter heaterMode = Parameter(heaterModePrm);
+
+  // Telemetry parameters updated periodically
+  Parameter rssi = Parameter(rssiTelem);
+  Parameter temperature = Parameter(temperatureTelem);
+  // Telemetry -- ThingsBoard connection
+  Parameter connRetries = Parameter(connRetriesTelem);
+  Parameter connErrors = Parameter(connErrorsTelem);
+  Parameter connCnt = Parameter(connCntTelem);
+  Parameter connCur = Parameter(connCurTelem);
+  Parameter connMin = Parameter(connMinTelem);
+  Parameter connMax = Parameter(connMaxTelem);
+
+  gbj_timer *timer_;
+  gbj_appwifi *wifi_;
+  inline void startTimer(unsigned long period)
+  {
+    SERIAL_VALUE("startTimer", period);
+    setPeriod(period);
+    timer_->resume();
+  }
+  char progmemBuffer_[progmemBufferLen];
+  inline const char *getPrmName(const char *progmemPrmName)
+  {
+    strcpy_P(progmemBuffer_, progmemPrmName);
+    return progmemBuffer_;
+  }
 
 private:
   enum Timing : unsigned long
@@ -264,25 +519,15 @@ private:
     new ThingsBoardSized<256, 16>(wificlient_);
   const char *server_;
   const char *token_;
-  bool subscribed_;
-  bool attribsChangeStatic_;
+  bool flSubscribed_;
+  bool flStaticsPublished_;
   byte fails_ = Params::PARAM_FAILS;
-  unsigned long tsRetry_ = millis();
+  unsigned long tsRetry_;
   // Handlers
   RPC_Callback *callbacks_;
   // Methods
   ResultCodes connect();
   ResultCodes subscribe();
-
-protected:
-  gbj_timer *timer_;
-  gbj_appwifi *wifi_;
-  inline void startTimer(unsigned long period)
-  {
-    SERIAL_VALUE("startTimer", period);
-    setPeriod(period);
-    timer_->resume();
-  }
 };
 
 #endif

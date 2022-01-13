@@ -3,15 +3,18 @@ const String gbj_appthingsboard::VERSION = "GBJ_APPTHINGSBOARD 1.0.0";
 
 gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
 {
+  if (!wifi_->isConnected())
+  {
+    return setLastResult(ResultCodes::ERROR_CONNECT);
+  }
   if (isConnected())
   {
-    SERIAL_TITLE("Connected");
     return setLastResult();
   }
-  SERIAL_ACTION("Connecting to TB...");
-  subscribed_ = false;
+  flSubscribed_ = false;
   if (fails_)
   {
+    SERIAL_ACTION("Connecting to TB...");
     byte counter = Params::PARAM_ATTEMPS;
     unsigned long tsConnStart = millis();
     while (!thingsboard_->connect(server_, token_))
@@ -41,12 +44,10 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     SERIAL_VALUE("fails", Params::PARAM_FAILS - fails_);
     fails_ = Params::PARAM_FAILS;
     tsRetry_ = millis();
-    setLastResult();
+    return subscribe();
   }
   else
   {
-    SERIAL_ACTION_END("Ignored");
-    setLastResult(ResultCodes::ERROR_CONNECT);
     // Retry connection after a while since recent connection or failure
     if (millis() - tsRetry_ > Timing::PERIOD_RETRY)
     {
@@ -55,8 +56,8 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
       fails_ = Params::PARAM_FAILS;
       tsRetry_ = millis();
     }
+    return setLastResult(ResultCodes::ERROR_CONNECT);
   }
-  return getLastResult();
 }
 
 gbj_appthingsboard::ResultCodes gbj_appthingsboard::subscribe()
@@ -71,7 +72,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::subscribe()
   if (thingsboard_->RPC_Subscribe(callbacks_, callbacks_size_))
   {
     SERIAL_ACTION_END("OK");
-    subscribed_ = true;
+    flSubscribed_ = true;
     return setLastResult();
   }
   else
@@ -79,55 +80,4 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::subscribe()
     SERIAL_ACTION_END("Failed");
     return setLastResult(ResultCodes::ERROR_SUBSCRIBE);
   }
-}
-
-void gbj_appthingsboard::run()
-{
-  if (timer_->run())
-  {
-    // Check external handlers
-    if (!wifi_->isConnected())
-    {
-      SERIAL_VALUE("run", "No Wifi");
-      return;
-    }
-    setLastResult();
-    // Connect
-    if (isSuccess())
-    {
-      connect();
-    }
-    // Subscribe
-    if (isSuccess())
-    {
-      subscribe();
-    }
-    // Publish static client attributes at change
-    if (isSuccess() && attribsChangeStatic_)
-    {
-      publishAttribsStatic();
-      if (isSuccess())
-      {
-        attribsChangeStatic_ = false;
-      }
-    }
-    // Publish dynamic client attributes at change
-    if (isSuccess())
-    {
-      publishAttribsDynamic();
-    }
-    // Publish telemetry
-    if (isSuccess())
-    {
-      publishMeasures();
-    }
-    // Error
-    if (isError())
-    {
-      SERIAL_VALUE("error", getLastResult());
-    }
-  }
-  // General loop delay. If zero, connecting to WiFi AP will timeout.
-  delay(20);
-  thingsboard_->loop();
 }
