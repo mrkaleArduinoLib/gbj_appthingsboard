@@ -289,61 +289,55 @@ protected:
     }
     Parameter(const char *key)
       : name(key)
+      , type(Datatype::TYPE_NONE)
+      , val()
     {
     }
     Parameter(const char *key, const char *value)
       : name(key)
       , type(Datatype::TYPE_STR)
-      , val()
     {
       val.str = value;
     }
     Parameter(const char *key, String value)
       : name(key)
       , type(Datatype::TYPE_STR)
-      , val()
     {
       val.str = value.c_str();
     }
     Parameter(const char *key, bool value)
       : name(key)
       , type(Datatype::TYPE_BOOL)
-      , val()
     {
       val.boolean = value;
     }
     Parameter(const char *key, int value)
       : name(key)
       , type(Datatype::TYPE_INT)
-      , val()
     {
       val.integer = value;
     }
     Parameter(const char *key, long value)
       : name(key)
       , type(Datatype::TYPE_INT)
-      , val()
     {
       val.integer = value;
     }
     Parameter(const char *key, unsigned int value)
       : name(key)
       , type(Datatype::TYPE_UINT)
-      , val()
     {
       val.big = value;
     }
     Parameter(const char *key, unsigned long value)
       : name(key)
       , type(Datatype::TYPE_UINT)
-      , val()
     {
       val.big = value;
     }
     Parameter(const char *key, float value)
       : name(key)
       , type(Datatype::TYPE_REAL)
-      , val()
     {
       val.real = value;
     }
@@ -404,7 +398,7 @@ protected:
     }
     String get()
     {
-      String result = "";
+      String result;
       switch (type)
       {
         case Datatype::TYPE_STR:
@@ -428,7 +422,7 @@ protected:
           break;
 
         case Datatype::TYPE_NONE:
-          result = String("n/a");
+          result = NA;
           break;
       }
       used = true;
