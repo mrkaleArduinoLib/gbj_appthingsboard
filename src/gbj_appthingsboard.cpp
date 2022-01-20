@@ -3,61 +3,69 @@ const String gbj_appthingsboard::VERSION = "GBJ_APPTHINGSBOARD 1.0.0";
 
 gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
 {
+  // No Wifi
   if (!wifi_->isConnected())
   {
     return setLastResult(ResultCodes::ERROR_CONNECT);
   }
-  if (isConnected())
+  // Call callback just once since connection lost
+  if (status_.flConnGain)
   {
-    return setLastResult();
-  }
-  flSubscribed_ = false;
-  if (fails_)
-  {
-    SERIAL_ACTION("Connecting to TB...");
-    byte counter = Params::PARAM_ATTEMPS;
-    unsigned long tsConnStart = millis();
-    while (!thingsboard_->connect(server_, token_))
+    SERIAL_TITLE("Connection lost")
+    status_.flConnGain = false;
+    if (handlers_.onDisconnect)
     {
-      // Calculate connection statistics
-      tbConnTime.cur = millis() - tsConnStart;
-      tbConnTime.min = min(tbConnTime.min, tbConnTime.cur);
-      tbConnTime.max = max(tbConnTime.max, tbConnTime.cur);
-      tbConnTime.cnt++;
-      tbConnTime.isFail = true;
-      // Evaluate connection failure
-      if (--counter == 0)
-      {
-        SERIAL_ACTION_END("Timeout");
-        tsRetry_ = millis();
-        fails_--;
-        tbConnTime.err++;
-        SERIAL_VALUE("fails", Params::PARAM_FAILS - fails_);
-        return setLastResult(ResultCodes::ERROR_CONNECT);
-      }
-      SERIAL_DOT;
-      tsConnStart = millis();
+      handlers_.onDisconnect();
     }
-    SERIAL_ACTION_END("Connected");
-    SERIAL_VALUE("server", server_);
-    SERIAL_VALUE("token", token_);
-    SERIAL_VALUE("fails", Params::PARAM_FAILS - fails_);
-    fails_ = Params::PARAM_FAILS;
-    tsRetry_ = millis();
-    return subscribe();
   }
+  // Wait for recovery period after failed connection
+  if (status_.tsRetry && millis() - status_.tsRetry <
+                           (status_.fails > PARAM_FAILS ? Timing::PERIOD_PROLONG
+                                                        : Timing::PERIOD_CYCLE))
+  {
+    return setLastResult(ResultCodes::ERROR_NOINIT);
+  }
+  if (handlers_.onConnectStart)
+  {
+    handlers_.onConnectStart();
+  }
+  SERIAL_ACTION("Connection to TB...")
+  byte counter = Params::PARAM_TRIES;
+  while (!thingsboard_->connect(server_, token_) && counter--)
+  {
+    SERIAL_DOT
+    delay(Timing::PERIOD_FAIL);
+  }
+  // Successful connection
+  if (thingsboard_->connected())
+  {
+    SERIAL_ACTION_END("Success")
+    SERIAL_VALUE("tries", Params::PARAM_TRIES - counter + 1)
+    SERIAL_VALUE("fails", status_.fails)
+    SERIAL_VALUE("server", server_)
+    SERIAL_VALUE("token", token_)
+    status_.reset();
+    status_.flConnGain = true;
+    if (handlers_.onConnectSuccess)
+    {
+      handlers_.onConnectSuccess();
+    }
+    setLastResult(ResultCodes::SUCCESS);
+  }
+  // Failed connection
   else
   {
-    // Retry connection after a while since recent connection or failure
-    if (millis() - tsRetry_ > Timing::PERIOD_RETRY)
+    status_.tsRetry = millis();
+    status_.fails++;
+    SERIAL_ACTION_END("Fail")
+    SERIAL_VALUE("fails", status_.fails)
+    if (handlers_.onConnectFail)
     {
-      SERIAL_TITLE("Reset retry");
-      tbConnTime.rts++;
-      fails_ = Params::PARAM_FAILS;
-      tsRetry_ = millis();
+      handlers_.onConnectFail();
     }
-    return setLastResult(ResultCodes::ERROR_CONNECT);
+    setLastResult(ResultCodes::ERROR_CONNECT);
   }
+  return getLastResult();
 }
 
 gbj_appthingsboard::ResultCodes gbj_appthingsboard::subscribe()
@@ -68,16 +76,23 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::subscribe()
   }
   // All consequent data processing will happen in callbacks as denoted by
   // callbacks[] array.
-  SERIAL_ACTION("Subscribing for RPC...");
   if (thingsboard_->RPC_Subscribe(callbacks_, callbacks_size_))
   {
-    SERIAL_ACTION_END("OK");
-    flSubscribed_ = true;
+    SERIAL_TITLE("RPC subscribed")
+    status_.flSubscribed = true;
+    if (handlers_.onSubscribeSuccess)
+    {
+      handlers_.onSubscribeSuccess();
+    }
     return setLastResult();
   }
   else
   {
-    SERIAL_ACTION_END("Failed");
+    SERIAL_TITLE("RPC subscription failed")
+    if (handlers_.onSubscribeFail)
+    {
+      handlers_.onSubscribeFail();
+    }
     return setLastResult(ResultCodes::ERROR_SUBSCRIBE);
   }
 }

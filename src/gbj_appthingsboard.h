@@ -43,6 +43,18 @@ class gbj_appthingsboard : public gbj_appbase
 public:
   static const String VERSION;
 
+  typedef void Handler();
+
+  struct Handlers
+  {
+    Handler *onConnectStart;
+    Handler *onConnectSuccess;
+    Handler *onConnectFail;
+    Handler *onDisconnect;
+    Handler *onSubscribeSuccess;
+    Handler *onSubscribeFail;
+  };
+
   /*
     Constructor.
 
@@ -59,13 +71,20 @@ public:
       - Data type: constant string
       - Default value: none
       - Limited range: none
+    handlers - A structure with pointers to various callback handler functions.
+      - Data type: Handlers
+      - Default value: structure with zeroed all handlers
+      - Limited range: system address range
 
     RETURN: object
   */
-  inline gbj_appthingsboard(const char *server, const char *token)
+  inline gbj_appthingsboard(const char *server,
+                            const char *token,
+                            Handlers handlers = Handlers())
   {
     server_ = server;
     token_ = token;
+    handlers_ = handlers;
     timer_ = new gbj_timer(0);
   }
 
@@ -85,7 +104,7 @@ public:
   */
   inline void begin(gbj_appwifi *wifi)
   {
-    SERIAL_TITLE("begin");
+    SERIAL_TITLE("begin")
     wifi_ = wifi;
   }
 
@@ -93,12 +112,11 @@ public:
   {
     callbacks_ = callbacks;
     callbacks_size_ = callbacks_size;
-    SERIAL_VALUE("callbacks", callbacks_size_);
+    SERIAL_VALUE("callbacks", callbacks_size_)
   }
 
   inline void run()
   {
-    connect();
     if (isConnected())
     {
       if (!flStaticsPublished_)
@@ -108,14 +126,14 @@ public:
       }
       publishAttribsDynamic();
       publishEvents();
-    }
-    // Publish telemetry
-    if (timer_->run())
-    {
-      if (isConnected())
+      if (timer_->run())
       {
         publishMeasures();
       }
+    }
+    else
+    {
+      connect();
     }
     // General loop delay. If zero, connecting to WiFi AP will timeout.
     delay(20);
@@ -145,17 +163,17 @@ public:
   template<class T>
   inline ResultCodes publishMeasure(const char *key, T value)
   {
-    SERIAL_ACTION("publishMeasure: ");
-    SERIAL_CHAIN2(key, "...");
+    SERIAL_ACTION("publishMeasure: ")
+    SERIAL_CHAIN2(key, "...")
     if (thingsboard_->sendTelemetryData(key, value))
     {
-      SERIAL_ACTION_END("OK");
+      SERIAL_ACTION_END("OK")
       return setLastResult();
     }
     else
     {
       // ThingsBoard outputs error message with EOL
-      SERIAL_VALUE("publishMeasure", "Error");
+      SERIAL_VALUE("publishMeasure", "Error")
       return setLastResult(ResultCodes::ERROR_PUBLISH);
     }
   }
@@ -163,17 +181,17 @@ public:
   inline ResultCodes publishMeasuresBatch(const Telemetry *data,
                                           size_t data_count)
   {
-    SERIAL_ACTION("publishMeasuresBatch");
-    SERIAL_CHAIN3(" (", data_count, ")...");
+    SERIAL_ACTION("publishMeasuresBatch")
+    SERIAL_CHAIN3(" (", data_count, ")...")
     if (thingsboard_->sendTelemetry(data, data_count))
     {
-      SERIAL_ACTION_END("OK");
+      SERIAL_ACTION_END("OK")
       return setLastResult();
     }
     else
     {
       // ThingsBoard outputs error message with EOL
-      SERIAL_VALUE("publishMeasuresBatch", "Error");
+      SERIAL_VALUE("publishMeasuresBatch", "Error")
       return setLastResult(ResultCodes::ERROR_PUBLISH);
     }
   }
@@ -201,17 +219,17 @@ public:
   template<class T>
   inline ResultCodes publishAttrib(const char *attrName, T value)
   {
-    SERIAL_ACTION("publishAttrib: ");
-    SERIAL_CHAIN2(attrName, "...");
+    SERIAL_ACTION("publishAttrib: ")
+    SERIAL_CHAIN2(attrName, "...")
     if (thingsboard_->sendAttributeData(attrName, value))
     {
-      SERIAL_ACTION_END("OK");
+      SERIAL_ACTION_END("OK")
       return setLastResult();
     }
     else
     {
       // ThingsBoard outputs error message with EOL
-      SERIAL_VALUE("publishAttrib", "Error");
+      SERIAL_VALUE("publishAttrib", "Error")
       return setLastResult(ResultCodes::ERROR_PUBLISH);
     }
   }
@@ -219,17 +237,17 @@ public:
   inline ResultCodes publishAttribsBatch(const Attribute *data,
                                          size_t data_count)
   {
-    SERIAL_ACTION("publishAttribsBatch");
-    SERIAL_CHAIN3(" (", data_count, ")...");
+    SERIAL_ACTION("publishAttribsBatch")
+    SERIAL_CHAIN3(" (", data_count, ")...")
     if (thingsboard_->sendAttributes(data, data_count))
     {
-      SERIAL_ACTION_END("OK");
+      SERIAL_ACTION_END("OK")
       return setLastResult();
     }
     else
     {
       // ThingsBoard outputs error message with EOL
-      SERIAL_VALUE("publishAttribsBatch", "Error");
+      SERIAL_VALUE("publishAttribsBatch", "Error")
       return setLastResult(ResultCodes::ERROR_PUBLISH);
     }
   }
@@ -242,19 +260,11 @@ public:
 
   // Setters
   inline void setPeriod(unsigned long period) { timer_->setPeriod(period); };
-  inline void resetConnFail() { tbConnTime.isFail = false; }
 
   // Getters
   inline unsigned long getPeriod() { return timer_->getPeriod(); };
   inline bool isConnected() { return thingsboard_->connected(); }
-  inline bool isSubscribed() { return flSubscribed_; }
-  inline unsigned int getConnFailRetries() { return tbConnTime.rts; };
-  inline unsigned int getConnFailErrors() { return tbConnTime.err; };
-  inline unsigned int getConnFailCnt() { return tbConnTime.cnt; };
-  inline unsigned long getConnFailCur() { return tbConnTime.cur; };
-  inline unsigned long getConnFailMin() { return tbConnTime.min; };
-  inline unsigned long getConnFailMax() { return tbConnTime.max; };
-  inline bool getConnFail() { return tbConnTime.isFail; };
+  inline bool isSubscribed() { return status_.flSubscribed; }
 
 protected:
   enum Datatype
@@ -433,38 +443,30 @@ protected:
   //****************************************************************************
   // Parameters definition
   //****************************************************************************
-  // Generic parameters initiated at compile time.
-  // Compiler build macros or included static data.
+  // Static attributes initiated at compile time (compiler build macros).
   Parameter version = Parameter(versionStatic, MAIN_VERSION);
   Parameter broker = Parameter(brokerStatic, BROKER);
   Parameter portOTA = Parameter(portOTAStatic, OTA_PORT);
 
-  // Generic parameters initiated at boot once
+  // Static attributes initiated at boot once.
   Parameter hostname = Parameter(hostnameStatic);
   Parameter addressIP = Parameter(addressIPStatic);
   Parameter addressMAC = Parameter(addressMACStatic);
 
-  // Generic EEPROM parameters updated at run time immediatelly
+  // Dynamic attributes updated immediatelly (EEPROM).
   Parameter periodPublish = Parameter(periodPublishPrm);
   Parameter mcuRestarts = Parameter(mcuRestartsPrm);
 
-  // Telemetry parameters updated periodically
+  // Measures updated immediatelly (events)
+
+  // Measures updated periodically (telemetry)
   Parameter rssi = Parameter(rssiTelem);
-  Parameter connWifi = Parameter(connWifiTelem);
-  Parameter connThingsboard = Parameter(connThingsboardTelem);
-  // Telemetry -- ThingsBoard connection
-  Parameter connRetries = Parameter(connRetriesTelem);
-  Parameter connErrors = Parameter(connErrorsTelem);
-  Parameter connCnt = Parameter(connCntTelem);
-  Parameter connCur = Parameter(connCurTelem);
-  Parameter connMin = Parameter(connMinTelem);
-  Parameter connMax = Parameter(connMaxTelem);
   //****************************************************************************
   gbj_timer *timer_;
   gbj_appwifi *wifi_;
   inline void startTimer(unsigned long period)
   {
-    SERIAL_VALUE("startTimer", period);
+    SERIAL_VALUE("startTimer", period)
     setPeriod(period);
     timer_->resume();
   }
@@ -478,41 +480,36 @@ protected:
 private:
   enum Timing : unsigned long
   {
-    PERIOD_CONNECT = 500,
-    PERIOD_RETRY = 5 * 60 * 1000,
+    PERIOD_FAIL = 500,
+    PERIOD_CYCLE = 1 * 60 * 1000,
+    PERIOD_PROLONG = 5 * 60 * 1000,
   };
   enum Params : byte
   {
-    PARAM_ATTEMPS = 3,
-    PARAM_FAILS = 2,
+    PARAM_TRIES = 5,
+    PARAM_FAILS = 3,
   };
-  struct Connection
+  struct Status
   {
-    unsigned int rts; // Retries (waits)
-    unsigned int err; // Fails
-    unsigned int cnt;
-    unsigned long cur;
-    unsigned long max;
-    unsigned long min = Timing::PERIOD_RETRY;
-    bool isFail;
+    byte fails;
+    unsigned long tsRetry;
+    bool flConnGain, flSubscribed;
     void reset()
     {
-      rts = err = cnt = cur = max = 0;
-      min = Timing::PERIOD_RETRY;
-      isFail = false;
+      fails = tsRetry = 0;
+      flConnGain = flSubscribed = false;
     }
-  } tbConnTime;
+  } status_;
   size_t callbacks_size_;
   WiFiClient wificlient_;
   ThingsBoardSized<256, 16> *thingsboard_ =
     new ThingsBoardSized<256, 16>(wificlient_);
   const char *server_;
   const char *token_;
-  bool flSubscribed_;
   bool flStaticsPublished_;
   byte fails_ = Params::PARAM_FAILS;
-  unsigned long tsRetry_;
   // Handlers
+  Handlers handlers_;
   RPC_Callback *callbacks_;
   // Methods
   ResultCodes connect();
