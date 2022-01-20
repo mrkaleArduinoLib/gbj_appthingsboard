@@ -341,8 +341,9 @@ protected:
     {
       val.real = value;
     }
-    void setIgnore() { ignore = true; }
     bool getIgnore() { return ignore; }
+    void setIgnore() { ignore = true; }
+    void resetIgnore() { ignore = false; }
     void set()
     {
       type = Datatype::TYPE_NONE;
@@ -449,6 +450,8 @@ protected:
 
   // Telemetry parameters updated periodically
   Parameter rssi = Parameter(rssiTelem);
+  Parameter connWifi = Parameter(connWifiTelem);
+  Parameter connThingsboard = Parameter(connThingsboardTelem);
   // Telemetry -- ThingsBoard connection
   Parameter connRetries = Parameter(connRetriesTelem);
   Parameter connErrors = Parameter(connErrorsTelem);
@@ -476,7 +479,7 @@ private:
   enum Timing : unsigned long
   {
     PERIOD_CONNECT = 500,
-    PERIOD_RETRY = 300000,
+    PERIOD_RETRY = 5 * 60 * 1000,
   };
   enum Params : byte
   {
