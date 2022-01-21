@@ -48,6 +48,7 @@ public:
   struct Handlers
   {
     Handler *onConnectStart;
+    Handler *onConnectTry;
     Handler *onConnectSuccess;
     Handler *onConnectFail;
     Handler *onDisconnect;

@@ -34,6 +34,10 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   while (!thingsboard_->connect(server_, token_) && counter--)
   {
     SERIAL_DOT
+    if (handlers_.onConnectTry)
+    {
+      handlers_.onConnectTry();
+    }
     delay(Timing::PERIOD_FAIL);
   }
   // Successful connection
