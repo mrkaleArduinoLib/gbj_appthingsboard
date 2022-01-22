@@ -136,6 +136,7 @@ public:
     {
       connect();
     }
+    subscribe();
     // General loop delay. If zero, connecting to WiFi AP will timeout.
     delay(20);
     thingsboard_->loop();
