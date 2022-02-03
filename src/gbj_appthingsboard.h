@@ -29,7 +29,7 @@
   #error !!! Only platforms with WiFi are suppored !!!
 #endif
 #include "ThingsBoard.h"
-#include "config_params.h"
+#include "config_params_gen.h"
 #include "gbj_appbase.h"
 #include "gbj_appwifi.h"
 #include "gbj_serial_debug.h"
@@ -86,7 +86,7 @@ public:
     server_ = server;
     token_ = token;
     handlers_ = handlers;
-    timer_ = new gbj_timer(0);
+    timer_ = new gbj_timer(Timing::PERIOD_PUBLISH);
   }
 
   /*
@@ -448,16 +448,17 @@ protected:
   // Static attributes initiated at compile time (compiler build macros).
   Parameter version = Parameter(versionStatic, MAIN_VERSION);
   Parameter broker = Parameter(brokerStatic, BROKER);
+  Parameter hostname = Parameter(hostnameStatic, WIFI_HOSTNAME);
   Parameter portOTA = Parameter(portOTAStatic, OTA_PORT);
 
   // Static attributes initiated at boot once.
-  Parameter hostname = Parameter(hostnameStatic);
-  Parameter addressIP = Parameter(addressIPStatic);
+  Parameter mcuBoot = Parameter(mcuBootStatic);
   Parameter addressMAC = Parameter(addressMACStatic);
 
   // Dynamic attributes updated immediatelly (EEPROM).
-  Parameter periodPublish = Parameter(periodPublishPrm);
   Parameter mcuRestarts = Parameter(mcuRestartsPrm);
+  Parameter addressIP = Parameter(addressIPPrm);
+  Parameter periodPublish = Parameter(periodPublishPrm);
 
   // Measures updated immediatelly (events)
 
@@ -466,12 +467,6 @@ protected:
   //****************************************************************************
   gbj_timer *timer_;
   gbj_appwifi *wifi_;
-  inline void startTimer(unsigned long period)
-  {
-    SERIAL_VALUE("startTimer", period)
-    setPeriod(period);
-    timer_->resume();
-  }
   char progmemBuffer_[progmemBufferLen];
   inline const char *getPrmName(const char *progmemPrmName)
   {
@@ -482,9 +477,10 @@ protected:
 private:
   enum Timing : unsigned long
   {
+    PERIOD_PUBLISH = 12 * 1000,
     PERIOD_FAIL = 500,
-    PERIOD_CYCLE = 1 * 60 * 1000,
-    PERIOD_PROLONG = 5 * 60 * 1000,
+    PERIOD_SET = 1 * 60 * 1000,
+    PERIOD_CYCLE = 5 * 60 * 1000,
   };
   enum Params : byte
   {

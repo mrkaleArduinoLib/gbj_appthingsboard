@@ -20,8 +20,8 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   }
   // Wait for recovery period after failed connection
   if (status_.tsRetry && millis() - status_.tsRetry <
-                           (status_.fails > PARAM_FAILS ? Timing::PERIOD_PROLONG
-                                                        : Timing::PERIOD_CYCLE))
+                           (status_.fails > PARAM_FAILS ? Timing::PERIOD_CYCLE
+                                                        : Timing::PERIOD_SET))
   {
     return setLastResult(ResultCodes::ERROR_NOINIT);
   }

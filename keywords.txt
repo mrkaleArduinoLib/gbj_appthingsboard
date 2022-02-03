@@ -5,24 +5,28 @@
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
-gbj_appthingsboard	KEYWORD1
+Handler	KEYWORD1
+Handlers	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
+gbj_appthingsboard	KEYWORD2
 begin	KEYWORD2
 callbacks	KEYWORD2
 run	KEYWORD2
+publishEvents	KEYWORD2
 publishMeasure	KEYWORD2
 publishMeasures	KEYWORD2
 publishMeasuresBatch	KEYWORD2
 publishAttrib	KEYWORD2
+publishAttribsBatch	KEYWORD2
 publishAttribsStatic	KEYWORD2
 publishAttribsDynamic	KEYWORD2
-publishAttribsBatch	KEYWORD2
 setAttribChange	KEYWORD2
 setPeriod	KEYWORD2
 getPeriod	KEYWORD2
+getPrmName	KEYWORD2
 isConnected	KEYWORD2
 isSubscribed	KEYWORD2
 
