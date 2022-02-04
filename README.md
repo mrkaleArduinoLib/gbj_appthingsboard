@@ -47,8 +47,8 @@ The connection process is composed of 3 level aiming to be robust. It gives the 
 
 <a id="generics"></a>
 
-## Generic published parameters
-Library provides definition of following generic publish parameter names that are utilized almost in every project.
+## Generic publishing parameters
+Library provides definition of following generic parameter names aimed for publishing to IoT platform that are utilized almost in every project.
 
 * They all are protected, so accessible only for derived child classes.
 * The definition name of a parameters defines the name of a parameter (attribute or telemetry measure), which is visibile in IoT platform.
@@ -112,6 +112,7 @@ Other constants, enumerations, result codes, and error codes are inherited from 
 ## Custom data types
 * [Handler](#handler)
 * [Handlers](#handlers)
+* [Parameter](#parameter)
 
 ## Interface
 The methods in bold are virtual methods and should be implemented in a project specific libraries.
@@ -203,6 +204,41 @@ gbj_appthingsboard device = gbj_appthingsboard(..., handlersDevice);
 [Handler](#handler)
 
 [gbj_appthingsboard](#gbj_appthingsboard)
+
+[Back to interface](#interface)
+
+
+<a id="parameter"></a>
+
+## Parameter
+
+#### Description
+The structure with members and member methods as a template of an publishing parameter.
+* The structure is protected, so that it is accessable only for derived classes, usually in project specific libraries, which only can define new parameters and their lists.
+* A publishing parameter as an instance of this structure acts as a parameter's cache for the IoT platform.
+* A parameter's cache is updated within particular virtual method implementation in the child class of a project specific library with parameter's setter.
+* Usually, if the parameter's cache is updated with the same value as already stored and has been already used, i.e., read by parameter's getter, the corresponding internal parameter's flag is set, which signals, that the values has not been changed since recent reading. This internal flag can be reset by corresponding parameter's method.
+
+#### Parameter methods
+* **Parameter(), Parameter(const char *key)**: Constructor for null parameter and a named parameter without initial value. This value can added by a parameter's setter.
+* **Parameter(const char *key, _\<datatype\>_ value)**: Constructors for a named parameter with initial value of particular data type. Valid data types are:
+  * const char* - pointer to an external string buffer
+  * String
+  * bool
+  * int
+  * long
+  * unsigned int
+  * unsigned long
+* **void set()**: The setter for updating a parameter with none value.
+* **void set(_\<datatype\>_ value)**: The setter for updating a parameter with initial value of particular data type. Valid data types are the same as at constructors.
+* **String get()**: The parameter's getter. It always converts the original value of the parameter to String. The result can be published to IoT platform even if it has the data type not supported by that platform. At the same time the getter sets the internal flag, which determines that the parameter value has been already read (used). It enables to a parameter's setter set another internal flag at updating with the same value, that the parameter should be ignored for subsequent publishings until a change occurs.
+* **void set(byte value)**: Setter of cache parameter value as an argument. Provided value is sanitized with valid range. If it is lower than minimum or greater than maximum, the default value is cached. If this sanitized value differs from already cached value, the change flag _chg_ is set. The setter returns cached value by calling its getter.
+* **bool getIgnore()**: It returns the internal flag determining that the parameter is marked to be ignored for next publishing.
+* **void setIgnore()**: It sets the internal flag determining that the parameter should be ignored for next publishing.
+* **void resetIgnore()**: It clears the internal flag determining that the parameter should be ignored for next publishing.
+
+#### See also
+[Generic publishing parameters](#generics)
 
 [Back to interface](#interface)
 
