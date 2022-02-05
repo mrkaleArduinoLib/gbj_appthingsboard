@@ -28,6 +28,9 @@ setAttribChange	KEYWORD2
 setPeriod	KEYWORD2
 getPeriod	KEYWORD2
 getPrmName	KEYWORD2
+getStage	KEYWORD2
+getFails	KEYWORD2
+getCycles	KEYWORD2
 isConnected	KEYWORD2
 isSubscribed	KEYWORD2
 

@@ -26,23 +26,26 @@ This is an application library, which is used usually as a project library for p
 Internal parameters are hard-coded in the library as enumerations and none of them have setters or getters associated.
 
 * **Publishing period** (12 s): It is a default time period for publishing data to IoT platform. Real publishing period is associated with corresponding setter and getter.
-* **Period of waiting for next connection attempt** (0.5 second): It is a time period, during which the system is waiting in blocking mode for next attempt to connect to IoT platform. The real time period between failed connection attempts can be much longer due to IoT platform timeout.
-* **Number of failed connection attempts in the connection set** (5): It is a countdown for failed connections to IoT platform at blocking waiting. After reaching this number of connection fails, which represents a connection set, the library starts waiting for next set, but without blocking the system.
-* **Period of waiting for next connection set** (1 minute): It is a time period since recent failed connection attempt of recent connection set, during which the system is waiting in non-blocking mode for next connection set of attempts.
-* **Number of failed connection sets** (3): It is a countdown for failed connection sets to IoT platform at non-blocking waiting. After reaching this number of connection sets, which represents a connection cycle, the library starts waiting for repeating another connection cycle.
-* **Period of waiting for next connection cycle** (5 minutes): It is a time period since recent failed connection attempt of recent connection set of recent connection cycle, during which the system is waiting in non-blocking mode for next cycle of connections.
+* **1st stage number of failed connection attempts** (6): It is a number of failed connections with non-blocking waiting among them for _short time period_.
+After reaching this number of connection fails, the library starts next connection stage.
+* **2nd stage number of failed connection attempts** (11): It is a number of cummulative failed connections with non-blocking waiting among them for _medium time period_. The number of failed connections at this stage of connection process is difference between the cummulative number and number for previous stage, i.e., 11 - 6 = 5.
+After reaching this number of connection fails, the library starts next connection stage.
+* **3rd stage number of failed connection attempts** (23): It is a number of cummulative failed connections with non-blocking waiting among them for _long time period_. The number of failed connections at this stage of connection process is difference between the cummulative number and number for previous stage, i.e., 23 - 11 = 12.
+After reaching this number of connection fails, the library repeates the connection process from scratch with the first stage.
+* **1st stage time period of waiting for next connection attempt** (5 seconds): It is a time period, during which the system is waiting in non-blocking mode for next attempt to connect to IoT platform at this stage of connection process. The real time period between failed connection attempts is increased by the IoT platform timeout, which is ~5 seconds.
+* **2nd stage time period of waiting for next connection attempt** (1 minute): It is a time period, during which the system is waiting in non-blocking mode for next attempt to connect to IoT platform at this stage of connection process. The real time period among failed connection attempts is increased by the IoT platform timeout.
+* **3rd stage time period of waiting for next connection attempt** (5 minutes): It is a time period, during which the system is waiting in non-blocking mode for next attempt to connect to IoT platform at this stage of connection process. The real time period among failed connection attempts is increased by the IoT platform timeout.
 
 
 <a id="connection"></a>
 
 ## Connection process
-The connection process is composed of 3 level aiming to be robust. It gives the chance either the microcontroller itself or the IoT platform to recover from failure and when connect automatically. The connection process is controlled by [internal parameters](#internals).
+The connection process is composed of 3 stages aiming to be robust. It gives the chance either the microcontroller itself or IoT platform to recover from failure and when connect automatically. On the other hand, failed connection attempts block the microcontroller as less as possible, mostly due to IoT platform timeout. If a connection attemp is successful, the library breaks entire connection process and goes to connection checking mode. The library provides handlers and getters for observing connection process, e.g., for statistical purposes.
 
-1. **Set of connection attemps**. It is a number of subsequent failed connection attemps. The library tries to connect to IoT platform. If it fails, it starts waiting in blocking mode for next attempt. If predefined number of connection attemps fails, the library starts waiting for next connection set. The connection set with waiting periods among connection attempts allow the microcontroller to consolidate its internals to establish connection. If a connection attemps is successful, the library breaks entire connection process and goes to connection checking mode.
-
-2. **Cycle of connection sets**. It is a number of subsequent failed connection sets. After failed connection set the library is waiting in non-blocking mode for next connection set. If predefined number of connection sets fails, the library starts waiting for next connection cycle. The connection cycle with waiting periods among connection sets allow the microcontroller to wait for a network WiFi router or access point to consolidate, restart, or so.
-
-3. **Reccurent connection cycles**. It is a repeating processing of previous two levels of connection process. If a connection cycle fails, the library starts waiting for repeating connection process described before. The waiting period among connection cycles allow to manually resolve potential problems with a WiFi router or access point, its configuration, restarting, or so.
+The connection process is controlled by [internal parameters](#internals) and starts at the first stage with short waiting time period.
+* When number of failed connections reaches the predefined number for first stage, the library increases the waiting period for second stage with medium time period.
+* When number of failed connections reaches the predefined number for second stage, the library increases the waiting period for third stage with long time period.
+* When number of failed connections reaches the predefined number for third stage, the library cycles the entire connection process with first stage.
 
 
 <a id="generics"></a>
@@ -132,6 +135,9 @@ The methods in bold are virtual methods and should be implemented in a project s
 * [**setPeriod()**](#period)
 * [**getPeriod()**](#period)
 * [getPrmName()](#getPrmName)
+* [getStage()](#getConnStat)
+* [getFails()](#getConnStat)
+* [getCycles()](#getConnStat)
 * [isConnected()](#isConnected)
 * [isSubscribed()](#isSubscribed)
 
@@ -592,6 +598,29 @@ The method returns a pointer to a parameter name.
 
 #### Returns
 Pointer to a parameter name.
+
+[Back to interface](#interface)
+
+
+<a id="getConnStat"></a>
+
+## getStage(), getFails(), getCycles()
+
+#### Description
+The corresponding method returns a measure of pending connection process, which can be used for statistical evaluation of the process, especially in particular handlers.
+
+#### Syntax
+    byte getStage()
+    byte getFails()
+    byte getCycles()
+
+#### Parameters
+None
+
+#### Returns
+* **getStage** returns current stage of the connection process, which determines waiting time period among connection attempts.
+* **getFails** returns current number of failed connection attempts withing pending connection cycle of the connection process, which determines threshold for changing waiting time period.
+* **getCycles** returns number of concluded connection cycles of the connection process, which determines how many times the connection process has been repeated.
 
 [Back to interface](#interface)
 

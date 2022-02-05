@@ -261,10 +261,13 @@ public:
   virtual ResultCodes publishAttribsDynamic() = 0;
 
   // Setters
-  inline void setPeriod(unsigned long period) { timer_->setPeriod(period); };
+  inline void setPeriod(unsigned long period) { timer_->setPeriod(period); }
 
   // Getters
-  inline unsigned long getPeriod() { return timer_->getPeriod(); };
+  inline unsigned long getPeriod() { return timer_->getPeriod(); }
+  inline byte getStage() { return status_.stage; }
+  inline byte getFails() { return status_.fails; }
+  inline byte getCycles() { return status_.cycles; }
   inline bool isConnected() { return thingsboard_->connected(); }
   inline bool isSubscribed() { return status_.flSubscribed; }
 
@@ -478,24 +481,25 @@ private:
   enum Timing : unsigned long
   {
     PERIOD_PUBLISH = 12 * 1000,
-    PERIOD_FAIL = 500,
-    PERIOD_SET = 1 * 60 * 1000,
-    PERIOD_CYCLE = 5 * 60 * 1000,
+    PERIOD_CONN_1 = 5 * 1000, // It is ThingsBoard timeout as well
+    PERIOD_CONN_2 = 1 * 60 * 1000,
+    PERIOD_CONN_3 = 5 * 60 * 1000,
   };
   enum Params : byte
   {
-    PARAM_TRIES = 5,
-    PARAM_FAILS = 3,
+    PARAM_CONN_1 = 6,
+    PARAM_CONN_2 = 11,
+    PARAM_CONN_3 = 23,
   };
   struct Status
   {
-    byte fails;
+    byte fails, cycles, stage;
     unsigned long tsRetry;
     bool flConnGain, flSubscribed;
-    void reset()
+    void init()
     {
-      fails = tsRetry = 0;
-      flConnGain = flSubscribed = false;
+      fails = cycles = stage = tsRetry = 0;
+      flConnGain = true;
     }
   } status_;
   size_t callbacks_size_;
@@ -505,7 +509,6 @@ private:
   const char *server_;
   const char *token_;
   bool flStaticsPublished_;
-  byte fails_ = Params::PARAM_FAILS;
   // Handlers
   Handlers handlers_;
   RPC_Callback *callbacks_;
