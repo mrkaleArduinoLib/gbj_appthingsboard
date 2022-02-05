@@ -53,7 +53,6 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   {
     handlers_.onConnectStart();
   }
-  SERIAL_TITLE("Conn START")
   SERIAL_ACTION("Connection to TB...")
   // Successful connection
   if (thingsboard_->connect(server_, token_))
