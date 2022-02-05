@@ -453,11 +453,11 @@ protected:
 
   // Static attributes initiated at boot once.
   Parameter mcuBoot = Parameter(mcuBootStatic);
-  Parameter addressMAC = Parameter(addressMACStatic);
+  Parameter addressMAC = Parameter(addressMacStatic);
 
   // Dynamic attributes updated immediatelly (EEPROM).
   Parameter mcuRestarts = Parameter(mcuRestartsPrm);
-  Parameter addressIP = Parameter(addressIPPrm);
+  Parameter addressIP = Parameter(addressIpPrm);
   Parameter periodPublish = Parameter(periodPublishPrm);
 
   // Measures updated immediatelly (events)

@@ -14,7 +14,7 @@ This is an application library, which is used usually as a project library for p
 ## Fundamental functionality
 * The library utilizes internal timer for periodical data publishing to IoT platform.
 * The connection to Wifi and to ThingsBoard IoT platform is checked at every loop of a main sketch.
-* If no connection to IoT platform is detercted, the library starts the [connection process](#connection).
+* If no connection to IoT platform is detected, the library starts the [connection process](#connection).
 * The library subscibes externally defined (in a main sketch)  _Remote Procedure Call_ (RPC) functions to the IoT platform.
 * The class from the library is not intended to be used directly in a sketch, just as a parent class for project specific device libraries communicating with IoT platform, e.g., `apptb_device`.
 * The library provides a couple of generic parameters with names stored in flash of the microcontroller and defined in the shared (common) include file `config_params_gen.h`.
@@ -26,11 +26,11 @@ This is an application library, which is used usually as a project library for p
 Internal parameters are hard-coded in the library as enumerations and none of them have setters or getters associated.
 
 * **Publishing period** (12 s): It is a default time period for publishing data to IoT platform. Real publishing period is associated with corresponding setter and getter.
-* **Period of waiting for next connection attempt** (500 ms): It is a time period, during which the system is waiting in blocking mode for next attempt to connect to IoT platform. The real time period between failed connection attempts can be much longer due to IoT platform timeout.
+* **Period of waiting for next connection attempt** (0.5 second): It is a time period, during which the system is waiting in blocking mode for next attempt to connect to IoT platform. The real time period between failed connection attempts can be much longer due to IoT platform timeout.
 * **Number of failed connection attempts in the connection set** (5): It is a countdown for failed connections to IoT platform at blocking waiting. After reaching this number of connection fails, which represents a connection set, the library starts waiting for next set, but without blocking the system.
-* **Period of waiting for next connection set** (1 min.): It is a time period since recent failed connection attempt of recent connection set, during which the system is waiting in non-blocking mode for next connection set of attempts.
-* **Number of failed connection sets** (3): It is a countdown for failed connection sets to IoT platform at non-blocking waiting. After reaching this number of connection sets, which represents a connection cycle, the library starts waiting for reapeting another connection cycle.
-* **Period of waiting for next connection cycle** (5 min.): It is a time period since recent failed connection attempt of recent connection set of recent connection cycle, during which the system is waiting in non-blocking mode for next cycle of connections.
+* **Period of waiting for next connection set** (1 minute): It is a time period since recent failed connection attempt of recent connection set, during which the system is waiting in non-blocking mode for next connection set of attempts.
+* **Number of failed connection sets** (3): It is a countdown for failed connection sets to IoT platform at non-blocking waiting. After reaching this number of connection sets, which represents a connection cycle, the library starts waiting for repeating another connection cycle.
+* **Period of waiting for next connection cycle** (5 minutes): It is a time period since recent failed connection attempt of recent connection set of recent connection cycle, during which the system is waiting in non-blocking mode for next cycle of connections.
 
 
 <a id="connection"></a>
@@ -42,7 +42,7 @@ The connection process is composed of 3 level aiming to be robust. It gives the 
 
 2. **Cycle of connection sets**. It is a number of subsequent failed connection sets. After failed connection set the library is waiting in non-blocking mode for next connection set. If predefined number of connection sets fails, the library starts waiting for next connection cycle. The connection cycle with waiting periods among connection sets allow the microcontroller to wait for a network WiFi router or access point to consolidate, restart, or so.
 
-3. **Reccurent connection cycles**. It is a repeating processing of previous two levels of connection process. If a connection cycle fails, the library starts waiting for repeating connection process described before. The waiting period among connection cycles allow to manually resolve potential problems with a WiFi router or access point, it configuration, restarting, or so.
+3. **Reccurent connection cycles**. It is a repeating processing of previous two levels of connection process. If a connection cycle fails, the library starts waiting for repeating connection process described before. The waiting period among connection cycles allow to manually resolve potential problems with a WiFi router or access point, its configuration, restarting, or so.
 
 
 <a id="generics"></a>
@@ -64,11 +64,11 @@ Library provides definition of following generic parameter names aimed for publi
 
 #### Static attributes initiated at at runtime right after boot of the microcontroller, but only once
   * **mcuBoot** with definition name `mcuBootStatic`. It is the boot reason of the recent microcontroller reset in form of name defined in the library `gbj_appcore` and reachable by parent getter `getResetName()`.
-  * **addressMAC** with definition name `addressMACStatic`. It is the MAC address of the microcontroller WiFi interface.
+  * **addressMAC** with definition name `addressMacStatic`. It is the MAC address of the microcontroller WiFi interface.
 
 #### Dynamic attributes updated immediatelly (usually stored in the EEPROM)
   * **mcuRestarts** with definition name `mcuRestartsPrm`. It is number of the microcontroller restarts initiated by failed attempts at WiFi connection process (similar to this connection process). The parameter is stored in the EEPROM. It is published only at change, i.e., after the microcontroller restart (boot) immediatelly, mostly due to failed wifi connection process.
-  * **addressIP** with definition name `addressIPPrm`. It is the current IP address of the microcontroller on the network.  It is published only at change (usually at WiFi reconnect), but immediatelly.
+  * **addressIP** with definition name `addressIpPrm`. It is the current IP address of the microcontroller on the network.  It is published only at change (usually at WiFi reconnect), but immediatelly.
   * **periodPublish** with definition name `periodPublishPrm`. It is the curren time period for publishing telemetry data to IoT platform. The parameter is stored in the EEPROM. It is published only at change by an RPC function immediatelly.
 
 #### Measures updated periodically (telemetry)
@@ -181,13 +181,13 @@ Structure of pointers to handlers each for particular event in processing.
     }
 
 #### Parameters
-* **onConnectStart**: Pointer to a callback function, which is call right before a new connection set.
-* **onConnectTry**: Pointer to a callback function, which is call after every failed connection attempt. It allows to observer the pending connection set.
-* **onConnectStart**: Pointer to a callback function, which is call right after successful connection to IoT platform.
-* **onConnectFail**: Pointer to a callback function, which is call right after failed connection set.
-* **onDisconnect**: Pointer to a callback function, which is call at lost of connection to IoT platform. It allows to create alarm or signal about it.
-* **onSubscribeSuccess**: Pointer to a callback function, which is call right after successful subscribing RPC functions.
-* **onSubscribeFail**: Pointer to a callback function, which is call right after failed subscribing RPC functions.
+* **onConnectStart**: Pointer to a callback function, which is called right before a new connection set.
+* **onConnectTry**: Pointer to a callback function, which is called after every failed connection attempt. It allows to observe the pending connection set.
+* **onConnectSuccess**: Pointer to a callback function, which is called right after successful connection to IoT platform.
+* **onConnectFail**: Pointer to a callback function, which is called right after failed connection set.
+* **onDisconnect**: Pointer to a callback function, which is called at lost of connection to IoT platform. It allows to create an alarm or a signal about it.
+* **onSubscribeSuccess**: Pointer to a callback function, which is called right after successful subscribing RPC functions.
+* **onSubscribeFail**: Pointer to a callback function, which is called right after failed subscribing RPC functions.
 
 #### Example
 Instantiation of the library is only for illustration here. Use the appropriate child class of a project specific library instead.

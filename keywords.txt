@@ -7,6 +7,7 @@
 #######################################
 Handler	KEYWORD1
 Handlers	KEYWORD1
+Parameter	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
