@@ -1,5 +1,5 @@
 #include "gbj_appthingsboard.h"
-const String gbj_appthingsboard::VERSION = "GBJ_APPTHINGSBOARD 1.1.0";
+const String gbj_appthingsboard::VERSION = "GBJ_APPTHINGSBOARD 1.2.0";
 
 gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
 {
@@ -13,6 +13,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   {
     SERIAL_TITLE("Connection lost")
     status_.flConnGain = false;
+    status_.flSubscribed = false;
     if (handlers_.onDisconnect)
     {
       handlers_.onDisconnect();
