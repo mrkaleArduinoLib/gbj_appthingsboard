@@ -268,6 +268,7 @@ public:
   inline byte getStage() { return status_.stage; }
   inline byte getFails() { return status_.fails; }
   inline byte getCycles() { return status_.cycles; }
+  inline const char *getServer() { return server_; }
   inline bool isConnected() { return thingsboard_->connected(); }
   inline bool isSubscribed() { return status_.flSubscribed; }
 
@@ -448,17 +449,15 @@ protected:
   //****************************************************************************
   // Parameters definition
   //****************************************************************************
-  // Static attributes initiated at compile time (compiler build macros).
-  Parameter version = Parameter(versionStatic, MAIN_VERSION);
-  Parameter broker = Parameter(brokerStatic, BROKER);
-  Parameter hostname = Parameter(hostnameStatic, WIFI_HOSTNAME);
-  Parameter portOTA = Parameter(portOTAStatic, OTA_PORT);
-
-  // Static attributes initiated at boot once.
+  // Static attributes initiated at boot once
+  Parameter version = Parameter(versionStatic);
+  Parameter broker = Parameter(brokerStatic);
+  Parameter portOTA = Parameter(portOTAStatic);
+  Parameter hostname = Parameter(hostnameStatic);
   Parameter mcuBoot = Parameter(mcuBootStatic);
   Parameter addressMAC = Parameter(addressMacStatic);
 
-  // Dynamic attributes updated immediatelly (EEPROM).
+  // Dynamic attributes updated immediatelly (EEPROM)
   Parameter mcuRestarts = Parameter(mcuRestartsPrm);
   Parameter addressIP = Parameter(addressIpPrm);
   Parameter periodPublish = Parameter(periodPublishPrm);

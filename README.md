@@ -56,16 +56,13 @@ Library provides definition of following generic parameter names aimed for publi
 * They all are protected, so accessible only for derived child classes.
 * The definition name of a parameters defines the name of a parameter (attribute or telemetry measure), which is visibile in IoT platform.
 * The variable of definition name takes name of corresponding parameter with appropriate suffix denoting its role.
-* The variable name of a parameter is usually same the parameter's name itself.
-
-#### Static attributes initiated at compile time (compiler build macros defined usually in the project manifest `platformio.ini`)
-
-  * **version** with definition name `versionStatic` and value _MAIN_VERSION_. It is the semantic version of a firmware version and servers in IoT platform as a client attribute for current microcontroller firmware identifier, e.g. 1.2.3.
-  * **broker** with definition name `brokerStatic` and value _BROKER_. It is informative name (mark, tag, etc.) of a computer where the ThingsBoard IoT platform runs and to which the microcontroller is connected, e.g., server, notebook, etc.
-  * **hostname** with definition name `hostnameStatic` and value 'WIFI_HOSTNAME'. It is the host name of the microcontroller on a WiFi network.
-  * **portOTA** with definition name `portOTAStatic` and value _OTA_PORT_. It is the TCP port, there an HTTP server with functionality of OTA listens, usually 80.
+* The variable name of a parameter is usually same as the parameter's name itself.
 
 #### Static attributes initiated at at runtime right after boot of the microcontroller, but only once
+  * **version** with definition name `versionStatic`. It is the semantic version of a firmware version in IoT platform as a client attribute for current microcontroller firmware identifier, e.g. 1.2.3.
+  * **broker** with definition name `brokerStatic`. It is an address of ThingsBoard server, i.e., a computer where the ThingsBoard IoT platform runs and to which the microcontroller is connected.
+  * **hostname** with definition name `hostnameStatic`. It is the host name of the microcontroller on a WiFi network.
+  * **portOTA** with definition name `portOTAStatic`. It is the TCP port, there an HTTP server with functionality of OTA listens, usually 80.
   * **mcuBoot** with definition name `mcuBootStatic`. It is the boot reason of the recent microcontroller reset in form of name defined in the library `gbj_appcore` and reachable by parent getter `getResetName()`.
   * **addressMAC** with definition name `addressMacStatic`. It is the MAC address of the microcontroller WiFi interface.
 
@@ -262,7 +259,7 @@ Constructor creates the class instance object and initiates internal resources.
     gbj_appthingsboard(const char *server, const char *token, Handlers handlers)
 
 #### Parameters
-* **server**: Pointer to an address of ThingsBoard server. It should be either IP address or web address.
+* **server**: Pointer to an address of ThingsBoard server. It should be either IP address, mDNS address, or web address.
   * *Valid values*: constant pointer to string
   * *Default value*: none
 

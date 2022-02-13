@@ -1,5 +1,5 @@
 #include "gbj_appthingsboard.h"
-const String gbj_appthingsboard::VERSION = "GBJ_APPTHINGSBOARD 1.2.0";
+const String gbj_appthingsboard::VERSION = "GBJ_APPTHINGSBOARD 1.3.0";
 
 gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
 {
