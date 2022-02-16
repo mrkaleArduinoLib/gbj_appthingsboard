@@ -455,11 +455,11 @@ protected:
   Parameter portOTA = Parameter(portOTAStatic);
   Parameter hostname = Parameter(hostnameStatic);
   Parameter mcuBoot = Parameter(mcuBootStatic);
+  Parameter addressIP = Parameter(addressIpStatic);
   Parameter addressMAC = Parameter(addressMacStatic);
 
   // Dynamic attributes updated immediatelly (EEPROM)
   Parameter mcuRestarts = Parameter(mcuRestartsPrm);
-  Parameter addressIP = Parameter(addressIpPrm);
   Parameter periodPublish = Parameter(periodPublishPrm);
 
   // Measures updated immediatelly (events)

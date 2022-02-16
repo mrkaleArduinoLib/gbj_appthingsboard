@@ -12,11 +12,11 @@ This is an application library, which is used usually as a project library for p
 
 
 ## Fundamental functionality
-* The library utilizes internal timer for periodical data publishing to IoT platform.
-* The connection to Wifi and to ThingsBoard IoT platform is checked at every loop of a main sketch.
-* If no connection to IoT platform is detected, the library starts the [connection process](#connection).
-* The library subscibes externally defined (in a main sketch)  _Remote Procedure Call_ (RPC) functions to the IoT platform.
-* The class from the library is not intended to be used directly in a sketch, just as a parent class for project specific device libraries communicating with IoT platform, e.g., `apptb_device`.
+* The library utilizes internal timer for periodical data publishing to <abbr title="Internet of Things">IoT</abbr> platform.
+* The connection to Wifi and to ThingsBoard <abbr title="Internet of Things">IoT</abbr> platform is checked at every loop of a main sketch.
+* If no connection to <abbr title="Internet of Things">IoT</abbr> platform is detected, the library starts the [connection process](#connection).
+* The library subscibes externally defined (in a main sketch) <abbr title="Remote Procedure Call">RPC</abbr> functions to the <abbr title="Internet of Things">IoT</abbr> platform.
+* The class from the library is not intended to be used directly in a sketch, just as a parent class for project specific device libraries communicating with <abbr title="Internet of Things">IoT</abbr> platform, e.g., `apptb_device`.
 * The library provides a couple of generic parameters with names stored in flash of the microcontroller and defined in the shared (common) include file `config_params_gen.h`.
 
 
@@ -25,7 +25,7 @@ This is an application library, which is used usually as a project library for p
 ## Internal parameters
 Internal parameters are hard-coded in the library as enumerations and none of them have setters or getters associated. The waiting for next connection attempt is in non-blocking mode. However, waiting on IoT platform connection `timeout is cca 5 seconds` in either case.
 
-* **Publishing period** (12 s): It is a default time period for publishing data to IoT platform. Real publishing period is associated with corresponding setter and getter.
+* **Publishing period** (`12 seconds`): It is a default time period for publishing data to IoT platform. Real publishing period is associated with corresponding setter and getter.
 * **1st stage time period of waiting for next connection attempt** (`5 seconds`): It is a time period during which the system is waiting for next attempt to connect to IoT platform at this stage of connection process. The real time period between failed connection attempts is increased by the IoT platform timeout, so that the real time period amont attempts is cca `10 seconds`.
 * **2nd stage time period of waiting for next connection attempt** (`1 minute`): It is a time period during which the system is waiting for next attempt to connect to IoT platform at this stage of connection process. The real time period among failed connection attempts is increased by the IoT platform timeout, so that the real time period amont attempts is cca `65 seconds`.
 * **3rd stage time period of waiting for next connection attempt** (`5 minutes`): It is a time period during which the system is waiting for next attempt to connect to IoT platform at this stage of connection process. The real time period among failed connection attempts is increased by the IoT platform timeout, so that the real time period amont attempts is cca `305 seconds`.
@@ -59,20 +59,20 @@ Library provides definition of following generic parameter names aimed for publi
 * The variable name of a parameter is usually same as the parameter's name itself.
 
 #### Static attributes initiated at at runtime right after boot of the microcontroller, but only once
-  * **version** with definition name `versionStatic`. It is the semantic version of a firmware version in IoT platform as a client attribute for current microcontroller firmware identifier, e.g. 1.2.3.
-  * **broker** with definition name `brokerStatic`. It is an address of ThingsBoard server, i.e., a computer where the ThingsBoard IoT platform runs and to which the microcontroller is connected.
-  * **hostname** with definition name `hostnameStatic`. It is the host name of the microcontroller on a WiFi network.
-  * **portOTA** with definition name `portOTAStatic`. It is the TCP port, there an HTTP server with functionality of OTA listens, usually 80.
-  * **mcuBoot** with definition name `mcuBootStatic`. It is the boot reason of the recent microcontroller reset in form of name defined in the library `gbj_appcore` and reachable by parent getter `getResetName()`.
-  * **addressMAC** with definition name `addressMacStatic`. It is the MAC address of the microcontroller WiFi interface.
+  * **version** with definition name `versionStatic`. Semantic version of a firmware version in IoT platform as a client attribute for current microcontroller firmware identifier, e.g. 1.2.3.
+  * **broker** with definition name `brokerStatic`. <abbr title="Internet Protocol">IP</abbr> or <abbr title="Multicast Domain Name System">mDNS</abbr> address of ThingsBoard server, i.e., a computer where the ThingsBoard IoT platform runs and to which the microcontroller is connected.
+  * **hostname** with definition name `hostnameStatic`. Host name of the microcontroller on a WiFi network.
+  * **portOTA** with definition name `portOTAStatic`. <abbr title="Transmission Control Protocol">TCP</abbr> port, there an <abbr title="Hypertext Transfer Protocol">HTTP</abbr> server with functionality of <abbr title="Over The Air">OTA</abbr> listens, usually 80.
+  * **mcuBoot** with definition name `mcuBootStatic`. Boot reason of the recent microcontroller reset in form of name defined in the library `gbj_appcore` and reachable by parent getter `getResetName()`.
+  * **addressIP** with definition name `addressIpStatic`. <abbr title="Internet Protocol">IP</abbr> address of the microcontroller on the network, usually set as static (fixed) one directly by the microcontroller or indirectly by <abbr title="Dynamic Host Configuration Protocol">DHCP</abbr> server.
+  * **addressMAC** with definition name `addressMacStatic`. <abbr title="Media Access Control">MAC</abbr> address of the microcontroller WiFi interface.
 
 #### Dynamic attributes updated immediatelly (usually stored in the EEPROM)
-  * **mcuRestarts** with definition name `mcuRestartsPrm`. It is number of the microcontroller restarts initiated by failed attempts at WiFi connection process (similar to this connection process). The parameter is stored in the EEPROM. It is published only at change, i.e., after the microcontroller restart (boot) immediatelly, mostly due to failed wifi connection process.
-  * **addressIP** with definition name `addressIpPrm`. It is the current IP address of the microcontroller on the network.  It is published only at change (usually at WiFi reconnect), but immediatelly.
-  * **periodPublish** with definition name `periodPublishPrm`. It is the curren time period for publishing telemetry data to IoT platform. The parameter is stored in the EEPROM. It is published only at change by an RPC function immediatelly.
+  * **mcuRestarts** with definition name `mcuRestartsPrm`. Number of the microcontroller restarts initiated by failed attempts at WiFi connection process (similar to this connection process). The parameter is stored in the <abbr title="Electrically Erasable Programmable Read-Only Memory">EEPROM</abbr>. It is published only at change, i.e., after the microcontroller restart (boot) immediatelly, mostly due to failed wifi connection process.
+  * **periodPublish** with definition name `periodPublishPrm`. Current time period for publishing telemetry data to IoT platform. The parameter is stored in the <abbr title="Electrically Erasable Programmable Read-Only Memory">EEPROM</abbr>. It is published only at change by an <abbr title="Remote Procedure Call">RPC</abbr> function immediatelly.
 
 #### Measures updated periodically (telemetry)
-* **rssi** with definition name `rssiTelem`. It is the value of WiFi _Received Signal Strength Indicator_ in _decibel milliwats_ (dBm). It is published at every publish period regardless it has been changed or not since recent publishing. The parameter serves as the signal of active microcontroller for IoT platform.
+* **rssi** with definition name `rssiTelem`. <abbr title="Received Signal Strength Indicator">RSSI</abbr> value of WiFi connection with the network expressed in <abbr title="Decibel milliwats">dBm</abbr>. It is published at every publish period regardless it has been changed or not since recent publishing. The parameter serves as the signal of active microcontroller for IoT platform.
 
 
 <a id="dependency"></a>
@@ -189,8 +189,8 @@ Structure of pointers to handlers each for particular event in processing.
 * **onConnectSuccess**: Pointer to a callback function, which is called right after successful connection to IoT platform.
 * **onConnectFail**: Pointer to a callback function, which is called right after failed connection set.
 * **onDisconnect**: Pointer to a callback function, which is called at lost of connection to IoT platform. It allows to create an alarm or a signal about it.
-* **onSubscribeSuccess**: Pointer to a callback function, which is called right after successful subscribing RPC functions.
-* **onSubscribeFail**: Pointer to a callback function, which is called right after failed subscribing RPC functions.
+* **onSubscribeSuccess**: Pointer to a callback function, which is called right after successful subscribing <abbr title="Remote Procedure Call">RPC</abbr> functions.
+* **onSubscribeFail**: Pointer to a callback function, which is called right after failed subscribing <abbr title="Remote Procedure Call">RPC</abbr> functions.
 
 #### Example
 Instantiation of the library is only for illustration here. Use the appropriate child class of a project specific library instead.
@@ -320,7 +320,7 @@ void setup()
 ## callbacks()
 
 #### Description
-The registration method for subscribing external functions as RPC callbacks to the IoT platform.
+The registration method for subscribing external functions as <abbr title="Remote Procedure Call">RPC</abbr> callbacks to the IoT platform.
 * The method should be called in the setup section of a sketch.
 * The method subscribes all external function in the input list.
 
@@ -540,7 +540,7 @@ The virtual methods that every child class derived from this library class shoul
 
 * The method `publishEvents()` is dedicated for telemetry data items of the device, which change occassionally and rarely. So that they are published individually at every change immediatelly by the multiple calls of the method [publishAttrib()](#publishAttrib).
 * The method `publishMeasures()` is dedicated for telemetry data items of the device, which change frequently, so that they have to by published periodically by either multiple calls of the method [publishMeasure()](#publishMeasure) or the single call of the method [publishMeasuresBatch()](#publishMeasuresBatch).
-* The method `publishAttribsStatic()` is dedicated for static client attributes of the device, which cannot be changed from IoT platform by RPC, but they are set at compile or boot time of the device. So that they are published just once by either multiple calls of the method [publishAttrib()](#publishAttrib) or the single call of the method [publishAttribsBatch()](#p.ublishAttribsBatch ).
+* The method `publishAttribsStatic()` is dedicated for static client attributes of the device, which cannot be changed from IoT platform by <abbr title="Remote Procedure Call">RPC</abbr>, but they are set at compile or boot time of the device. So that they are published just once by either multiple calls of the method [publishAttrib()](#publishAttrib) or the single call of the method [publishAttribsBatch()](#p.ublishAttribsBatch ).
 * The method `publishAttribsDynamic()` is dedicated for dynamic client attributes of the device, which change occassionally and rarely. So that they are published individually at every change immediatelly by the multiple calls of the method [publishAttrib()](#publishAttrib).
 
 #### Syntax
@@ -646,7 +646,7 @@ Flag about connecting status to IoT platform.
 ## isSubscribed()
 
 #### Description
-The method returns a flag whether the RPC functions RE successfully subscribed to the IoT platform.
+The method returns a flag whether the <abbr title="Remote Procedure Call">RPC</abbr> functions have been successfully subscribed to the IoT platform.
 
 #### Syntax
     bool isSubscribed()
