@@ -72,7 +72,7 @@ Library provides definition of following generic parameter names aimed for publi
   * **periodPublish** with definition name `periodPublishPrm`. Current time period for publishing telemetry data to IoT platform. The parameter is stored in the <abbr title="Electrically Erasable Programmable Read-Only Memory">EEPROM</abbr>. It is published only at change by an <abbr title="Remote Procedure Call">RPC</abbr> function immediatelly.
 
 #### Measures updated periodically (telemetry)
-* **rssi** with definition name `rssiTelem`. <abbr title="Received Signal Strength Indicator">RSSI</abbr> value of WiFi connection with the network expressed in <abbr title="Decibel milliwats">dBm</abbr>. It is published at every publish period regardless it has been changed or not since recent publishing. The parameter serves as the signal of active microcontroller for IoT platform.
+* **rssi** with definition name `rssiTelem`. <abbr title="Received Signal Strength Indicator">RSSI</abbr> value of WiFi connection with the network expressed in <abbr title="Decibel milliwats">dBm</abbr>. It is published at every publish period regardless of it has been changed since recent publishing. The parameter serves as the signal of active microcontroller for IoT platform.
 
 
 <a id="dependency"></a>
@@ -220,25 +220,26 @@ The structure with members and member methods as a template of an publishing par
 * The structure is protected, so that it is accessable only for derived classes, usually in project specific libraries, which only can define new parameters and their lists.
 * A publishing parameter as an instance of this structure acts as a parameter's cache for the IoT platform.
 * A parameter's cache is updated within particular virtual method implementation in the child class of a project specific library with parameter's setter.
-* Usually, if the parameter's cache is updated with the same value as already stored and has been already used, i.e., read by parameter's getter, the corresponding internal parameter's flag is set, which signals, that the values has not been changed since recent reading. This internal flag can be reset by corresponding parameter's method.
+* By default every parameter is internally marked as publishable only at change. This can be permanently discarded by corresponding constructor's argument or temporarily (for next publishing period only, i.e., until subsequent using new value) by corresponding method.
 
 #### Parameter methods
-* **Parameter(), Parameter(const char *key)**: Constructor for null parameter and a named parameter without initial value. This value can added by a parameter's setter.
-* **Parameter(const char *key, _\<datatype\>_ value)**: Constructors for a named parameter with initial value of particular data type. Valid data types are:
-  * const char* - pointer to an external string buffer
-  * String
-  * bool
-  * int
-  * long
-  * unsigned int
-  * unsigned long
-* **void set()**: The setter for updating a parameter with none value.
-* **void set(_\<datatype\>_ value)**: The setter for updating a parameter with initial value of particular data type. Valid data types are the same as at constructors.
-* **String get()**: The parameter's getter. It always converts the original value of the parameter to String. The result can be published to IoT platform even if it has the data type not supported by that platform. At the same time the getter sets the internal flag, which determines that the parameter value has been already read (used). It enables to a parameter's setter set another internal flag at updating with the same value, that the parameter should be ignored for subsequent publishings until a change occurs.
-* **void set(byte value)**: Setter of cache parameter value as an argument. Provided value is sanitized with valid range. If it is lower than minimum or greater than maximum, the default value is cached. If this sanitized value differs from already cached value, the change flag _chg_ is set. The setter returns cached value by calling its getter.
-* **bool getIgnore()**: It returns the internal flag determining that the parameter is marked to be ignored for next publishing.
-* **void setIgnore()**: It sets the internal flag determining that the parameter should be ignored for next publishing.
-* **void resetIgnore()**: It clears the internal flag determining that the parameter should be ignored for next publishing.
+* **Parameter(const char *key[, bool always = false])**: Constructor for a parameter and its flag about publishing.
+  * **key**: The name of a parameter as it is used for IoT platform for a measure's key-value pair. The parameter's name is usually stored in flash memory for reducing operational memory usage.
+  * **always**: The optional flag determining the publish mode of parameter. By default it is _false_ and sets that mode for publishing at change only.
+* **void set(_\<datatype\>_ value)**: The setter for updating a parameter with value of particular data type. Valid data types are:
+  1. const char* - pointer to an external string buffer
+  2. String
+  3. bool
+  4. int
+  5. long
+  6. unsigned int
+  7. unsigned long
+  8. float
+* **char *getName()**: The getter returns the parameter's name for publishing purposes.
+* **String get()**: The parameter's getter returns the parameter's current value for publishing purposes. It always converts the original value of the parameter to data type _String_. The result can be published to IoT platform even if it has the data type not supported by that platform. At the same time the getter sets the internal flag, which determines that the parameter has been already initiated, i.e., initially published. From now on the parameter's publishing mode comes into force.
+* **bool isReady()**: It determines whether the publishing of the parameter is available.
+* **void init()**: It forces the publishing of the parameter for the next publishing period as the parameter would used for the first time. It is useful, e.g., for publishing long time stable telemetry measures at particular multiple of a publishing period.
+* **void hide()**: It suppresses the publishing of the parameter for the next publishing period (until calling the setter). It is useful, e.g., at detecting improper or unreasonable parameter's value within pending publishing period.
 
 #### See also
 [Generic publishing parameters](#generics)

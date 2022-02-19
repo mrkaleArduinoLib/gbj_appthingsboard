@@ -295,122 +295,66 @@ protected:
     const char *name;
     Datatype type;
     Data val;
-    bool ignore;
-    bool used;
-    Parameter()
-      : name(NULL)
-      , type(Datatype::TYPE_NONE)
-      , val()
-    {
-    }
-    Parameter(const char *key)
+    bool flAlways;
+    bool flInit;
+    bool flShow;
+    Parameter(const char *key, bool always = false)
       : name(key)
       , type(Datatype::TYPE_NONE)
-      , val()
+      , flAlways(always)
+      , flInit(true)
     {
     }
-    Parameter(const char *key, const char *value)
-      : name(key)
-      , type(Datatype::TYPE_STR)
-    {
-      val.str = value;
-    }
-    Parameter(const char *key, String value)
-      : name(key)
-      , type(Datatype::TYPE_STR)
-    {
-      val.str = value.c_str();
-    }
-    Parameter(const char *key, bool value)
-      : name(key)
-      , type(Datatype::TYPE_BOOL)
-    {
-      val.boolean = value;
-    }
-    Parameter(const char *key, int value)
-      : name(key)
-      , type(Datatype::TYPE_INT)
-    {
-      val.integer = value;
-    }
-    Parameter(const char *key, long value)
-      : name(key)
-      , type(Datatype::TYPE_INT)
-    {
-      val.integer = value;
-    }
-    Parameter(const char *key, unsigned int value)
-      : name(key)
-      , type(Datatype::TYPE_UINT)
-    {
-      val.big = value;
-    }
-    Parameter(const char *key, unsigned long value)
-      : name(key)
-      , type(Datatype::TYPE_UINT)
-    {
-      val.big = value;
-    }
-    Parameter(const char *key, float value)
-      : name(key)
-      , type(Datatype::TYPE_REAL)
-    {
-      val.real = value;
-    }
-    bool getIgnore() { return ignore; }
-    void setIgnore() { ignore = true; }
-    void resetIgnore() { ignore = false; }
-    void set()
-    {
-      type = Datatype::TYPE_NONE;
-      ignore = false;
-    }
+    bool isReady() { return flShow; }
+    void init() { flInit = true; }
+    void hide() { flShow = false; }
+    const char *getName() { return name; }
     void set(const char *value)
     {
       type = Datatype::TYPE_STR;
-      ignore = used && (val.str == value);
+      flShow = flAlways || flInit || !(val.str == value);
       val.str = value;
     }
     void set(String value)
     {
       type = Datatype::TYPE_STR;
-      ignore = used && (val.str == value.c_str());
+      flShow = flAlways || flInit || !(val.str == value.c_str());
       val.str = value.c_str();
     }
     void set(bool value)
     {
       type = Datatype::TYPE_BOOL;
-      ignore = used && (val.boolean == value);
+      flShow = flAlways || flInit || !(val.boolean == value);
       val.boolean = value;
     }
     void set(int value)
     {
       type = Datatype::TYPE_INT;
-      ignore = used && (val.integer == value);
+      flShow = flAlways || flInit || !(val.integer == value);
       val.integer = value;
     }
     void set(long value)
     {
       type = Datatype::TYPE_INT;
-      ignore = used && (val.integer == value);
+      flShow = flAlways || flInit || !(val.integer == value);
       val.integer = value;
     }
     void set(unsigned int value)
     {
       type = Datatype::TYPE_UINT;
-      ignore = used && (val.big == value);
+      flShow = flAlways || flInit || !(val.big == value);
       val.integer = value;
     }
     void set(unsigned long value)
     {
       type = Datatype::TYPE_UINT;
-      ignore = used && (val.big == value);
+      flShow = flAlways || flInit || !(val.big == value);
       val.integer = value;
     }
     void set(float value)
     {
       type = Datatype::TYPE_REAL;
-      ignore = used && (val.real == value);
+      flShow = flAlways || flInit || !(val.real == value);
       val.real = value;
     }
     String get()
@@ -442,7 +386,7 @@ protected:
           result = NA;
           break;
       }
-      used = true;
+      flInit = false;
       return result;
     }
   };
@@ -465,7 +409,7 @@ protected:
   // Measures updated immediatelly (events)
 
   // Measures updated periodically (telemetry)
-  Parameter rssi = Parameter(rssiTelem);
+  Parameter rssi = Parameter(rssiTelem, true); // Publish always
   //****************************************************************************
   gbj_timer *timer_;
   gbj_appwifi *wifi_;
