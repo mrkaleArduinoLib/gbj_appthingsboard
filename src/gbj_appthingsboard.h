@@ -41,7 +41,7 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  static const String VERSION;
+  const String VERSION = "GBJ_APPTHINGSBOARD 1.5.0";
 
   typedef void Handler();
 
@@ -383,7 +383,7 @@ protected:
           break;
 
         case Datatype::TYPE_NONE:
-          result = NA;
+          result = "n/a";
           break;
       }
       flInit = false;
