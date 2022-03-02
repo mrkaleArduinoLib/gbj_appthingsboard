@@ -79,6 +79,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     SERIAL_VALUE("stage", status_.stage)
     SERIAL_VALUE("fails", status_.fails)
     SERIAL_VALUE("cycles", status_.cycles)
+    status_.flSubscribed = false;
     if (handlers_.onConnectFail)
     {
       handlers_.onConnectFail();
