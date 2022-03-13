@@ -24,7 +24,6 @@ publishAttrib	KEYWORD2
 publishAttribsBatch	KEYWORD2
 publishAttribsStatic	KEYWORD2
 publishAttribsDynamic	KEYWORD2
-setAttribChange	KEYWORD2
 setPeriod	KEYWORD2
 getPeriod	KEYWORD2
 getPrmName	KEYWORD2

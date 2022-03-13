@@ -120,10 +120,10 @@ public:
   {
     if (isConnected())
     {
-      if (!flStaticsPublished_)
+      if (!status_.flStatics)
       {
         publishAttribsStatic();
-        flStaticsPublished_ = isSuccess(); // Only at very beginning
+        status_.flStatics = isSuccess(); // Only at very beginning
       }
       publishAttribsDynamic();
       publishEvents();
@@ -438,7 +438,7 @@ private:
   {
     byte fails, cycles, stage;
     unsigned long tsRetry;
-    bool flConnGain, flSubscribed;
+    bool flConnGain, flSubscribed, flStatics;
     void init()
     {
       fails = cycles = stage = tsRetry = 0;
@@ -451,7 +451,6 @@ private:
     new ThingsBoardSized<256, 16>(wificlient_);
   const char *server_;
   const char *token_;
-  bool flStaticsPublished_;
   // Handlers
   Handlers handlers_;
   RPC_Callback *callbacks_;

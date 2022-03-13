@@ -58,7 +58,7 @@ Library provides definition of following generic parameter names aimed for publi
 * The variable of definition name takes name of corresponding parameter with appropriate suffix denoting its role.
 * The variable name of a parameter is usually same as the parameter's name itself.
 
-#### Static attributes initiated at at runtime right after boot of the microcontroller, but only once
+#### Static attributes initiated at runtime right after boot of the microcontroller or after reconnection to IoT platform, but only once
   * **version** with definition name `versionStatic`. Semantic version of a firmware version in IoT platform as a client attribute for current microcontroller firmware identifier, e.g. 1.2.3.
   * **broker** with definition name `brokerStatic`. <abbr title="Internet Protocol">IP</abbr> or <abbr title="Multicast Domain Name System">mDNS</abbr> address of ThingsBoard server, i.e., a computer where the ThingsBoard IoT platform runs and to which the microcontroller is connected.
   * **hostname** with definition name `hostnameStatic`. Host name of the microcontroller on a WiFi network.

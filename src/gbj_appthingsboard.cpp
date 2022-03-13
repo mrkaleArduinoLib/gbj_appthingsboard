@@ -13,6 +13,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     SERIAL_TITLE("Connection lost")
     status_.flConnGain = false;
     status_.flSubscribed = false;
+    status_.flStatics = false;
     if (handlers_.onDisconnect)
     {
       handlers_.onDisconnect();
