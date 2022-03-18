@@ -41,7 +41,7 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const String VERSION = "GBJ_APPTHINGSBOARD 1.5.0";
+  const String VERSION = "GBJ_APPTHINGSBOARD 1.6.0";
 
   typedef void Handler();
 
@@ -309,52 +309,60 @@ protected:
     void init() { flInit = true; }
     void hide() { flShow = false; }
     const char *getName() { return name; }
-    void set(const char *value)
+    void set(const char *value, bool flHide = false)
     {
       type = Datatype::TYPE_STR;
       flShow = flAlways || flInit || !(val.str == value);
+      flShow = flShow && !flHide;
       val.str = value;
     }
-    void set(String value)
+    void set(String value, bool flHide = false)
     {
       type = Datatype::TYPE_STR;
       flShow = flAlways || flInit || !(val.str == value.c_str());
+      flShow = flShow && !flHide;
       val.str = value.c_str();
     }
-    void set(bool value)
+    void set(bool value, bool flHide = false)
     {
       type = Datatype::TYPE_BOOL;
       flShow = flAlways || flInit || !(val.boolean == value);
+      flShow = flShow && !flHide;
       val.boolean = value;
     }
-    void set(int value)
+    void set(int value, bool flHide = false)
     {
       type = Datatype::TYPE_INT;
       flShow = flAlways || flInit || !(val.integer == value);
+      flShow = flShow && !flHide;
       val.integer = value;
     }
-    void set(long value)
+    void set(long value, bool flHide = false)
     {
       type = Datatype::TYPE_INT;
       flShow = flAlways || flInit || !(val.integer == value);
+      flShow = flShow && !flHide;
       val.integer = value;
     }
-    void set(unsigned int value)
+    void set(unsigned int value, bool flHide = false)
     {
       type = Datatype::TYPE_UINT;
       flShow = flAlways || flInit || !(val.big == value);
+      flShow = flShow && !flHide;
       val.integer = value;
     }
-    void set(unsigned long value)
+    void set(unsigned long value, bool flHide = false)
     {
       type = Datatype::TYPE_UINT;
       flShow = flAlways || flInit || !(val.big == value);
+      flShow = flShow && !flHide;
       val.integer = value;
     }
-    void set(float value)
+    void set(float value, bool flHide = false)
     {
       type = Datatype::TYPE_REAL;
       flShow = flAlways || flInit || !(val.real == value);
+      flShow = flShow && !flHide;
       val.real = value;
     }
     String get()

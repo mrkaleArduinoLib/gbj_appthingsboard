@@ -226,20 +226,22 @@ The structure with members and member methods as a template of an publishing par
 * **Parameter(const char *key[, bool always = false])**: Constructor for a parameter and its flag about publishing.
   * **key**: The name of a parameter as it is used for IoT platform for a measure's key-value pair. The parameter's name is usually stored in flash memory for reducing operational memory usage.
   * **always**: The optional flag determining the publish mode of parameter. By default it is _false_ and sets that mode for publishing at change only.
-* **void set(_\<datatype\>_ value)**: The setter for updating a parameter with value of particular data type. Valid data types are:
-  1. const char* - pointer to an external string buffer
-  2. String
-  3. bool
-  4. int
-  5. long
-  6. unsigned int
-  7. unsigned long
-  8. float
+* **void set(_\<datatype\>_ value[, bool flHide = false])**: The setter for updating a parameter.
+  * **value**: The new value of the parameter. Its valid data types are:
+    1. const char* - pointer to an external string buffer
+    2. String
+    3. bool
+    4. int
+    5. long
+    6. unsigned int
+    7. unsigned long
+    8. float
+  * **flHide**: The optional flag determining the suppressing the publishing of the parameter for the next publishing period. It is useful for filtering improper or unreasonable parameter's values from publishing. It might be an appropriate logical expression or a function call.
 * **char *getName()**: The getter returns the parameter's name for publishing purposes.
 * **String get()**: The parameter's getter returns the parameter's current value for publishing purposes. It always converts the original value of the parameter to data type _String_. The result can be published to IoT platform even if it has the data type not supported by that platform. At the same time the getter sets the internal flag, which determines that the parameter has been already initiated, i.e., initially published. From now on the parameter's publishing mode comes into force.
 * **bool isReady()**: It determines whether the publishing of the parameter is available.
 * **void init()**: It forces the publishing of the parameter for the next publishing period as the parameter would used for the first time. It is useful, e.g., for publishing long time stable telemetry measures at particular multiple of a publishing period.
-* **void hide()**: It suppresses the publishing of the parameter for the next publishing period (until calling the setter). It is useful, e.g., at detecting improper or unreasonable parameter's value within pending publishing period.
+* **void hide()**: It suppresses the publishing of the parameter for the next publishing period. It is useful, e.g., at detecting improper or unreasonable parameter's value within pending publishing period. The result of this method is the same as using positive second argument _flHide_ at method _set_.
 
 #### See also
 [Generic publishing parameters](#generics)
