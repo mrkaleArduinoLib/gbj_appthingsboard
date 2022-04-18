@@ -29,9 +29,7 @@
   #error !!! Only platforms with WiFi are suppored !!!
 #endif
 #include "ThingsBoard.h"
-#include "config_params_gen.h"
 #include "gbj_appbase.h"
-#include "gbj_appwifi.h"
 #include "gbj_serial_debug.h"
 #include "gbj_timer.h"
 
@@ -41,12 +39,13 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const String VERSION = "GBJ_APPTHINGSBOARD 1.6.0";
+  const char *VERSION = "GBJ_APPTHINGSBOARD 1.7.0";
 
   typedef void Handler();
 
   struct Handlers
   {
+    Handler *onPublish;
     Handler *onConnectStart;
     Handler *onConnectTry;
     Handler *onConnectSuccess;
@@ -89,26 +88,6 @@ public:
     timer_ = new gbj_timer(Timing::PERIOD_PUBLISH);
   }
 
-  /*
-    Initialization.
-
-    DESCRIPTION:
-    The method should be called in the SETUP section of a sketch.
-
-    PARAMETERS:
-    wifi - A pointer to the instance object for processing WiFi connection.
-      - Data type: gbj_appwifi
-      - Default value: none
-      - Limited range: system address space
-
-    RETURN: Result code.
-  */
-  inline void begin(gbj_appwifi *wifi)
-  {
-    SERIAL_TITLE("begin")
-    wifi_ = wifi;
-  }
-
   inline void callbacks(RPC_Callback *callbacks = 0, size_t callbacks_size = 0)
   {
     callbacks_ = callbacks;
@@ -129,6 +108,10 @@ public:
       publishEvents();
       if (timer_->run())
       {
+        if (handlers_.onPublish)
+        {
+          handlers_.onPublish();
+        }
         publishMeasures();
       }
     }
@@ -260,8 +243,13 @@ public:
   virtual ResultCodes publishAttribsStatic() = 0;
   virtual ResultCodes publishAttribsDynamic() = 0;
 
-  // Setters
+  // Set timer period inputed as unsigned long in milliseconds
   inline void setPeriod(unsigned long period) { timer_->setPeriod(period); }
+  // Set timer period inputed as String in seconds
+  inline void setPeriod(String period)
+  {
+    timer_->setPeriod(1000 * (unsigned long)period.toInt());
+  }
 
   // Getters
   inline unsigned long getPeriod() { return timer_->getPeriod(); }
@@ -273,160 +261,7 @@ public:
   inline bool isSubscribed() { return status_.flSubscribed; }
 
 protected:
-  enum Datatype
-  {
-    TYPE_NONE,
-    TYPE_BOOL,
-    TYPE_INT,
-    TYPE_UINT,
-    TYPE_REAL,
-    TYPE_STR,
-  };
-  union Data
-  {
-    const char *str;
-    bool boolean;
-    long integer;
-    unsigned long big;
-    float real;
-  };
-  struct Parameter
-  {
-    const char *name;
-    Datatype type;
-    Data val;
-    bool flAlways;
-    bool flInit;
-    bool flShow;
-    Parameter(const char *key, bool always = false)
-      : name(key)
-      , type(Datatype::TYPE_NONE)
-      , flAlways(always)
-      , flInit(true)
-    {
-    }
-    bool isReady() { return flShow; }
-    void init() { flInit = true; }
-    void hide() { flShow = false; }
-    const char *getName() { return name; }
-    void set(const char *value, bool flHide = false)
-    {
-      type = Datatype::TYPE_STR;
-      flShow = flAlways || flInit || !(val.str == value);
-      flShow = flShow && !flHide;
-      val.str = value;
-    }
-    void set(String value, bool flHide = false)
-    {
-      type = Datatype::TYPE_STR;
-      flShow = flAlways || flInit || !(val.str == value.c_str());
-      flShow = flShow && !flHide;
-      val.str = value.c_str();
-    }
-    void set(bool value, bool flHide = false)
-    {
-      type = Datatype::TYPE_BOOL;
-      flShow = flAlways || flInit || !(val.boolean == value);
-      flShow = flShow && !flHide;
-      val.boolean = value;
-    }
-    void set(int value, bool flHide = false)
-    {
-      type = Datatype::TYPE_INT;
-      flShow = flAlways || flInit || !(val.integer == value);
-      flShow = flShow && !flHide;
-      val.integer = value;
-    }
-    void set(long value, bool flHide = false)
-    {
-      type = Datatype::TYPE_INT;
-      flShow = flAlways || flInit || !(val.integer == value);
-      flShow = flShow && !flHide;
-      val.integer = value;
-    }
-    void set(unsigned int value, bool flHide = false)
-    {
-      type = Datatype::TYPE_UINT;
-      flShow = flAlways || flInit || !(val.big == value);
-      flShow = flShow && !flHide;
-      val.integer = value;
-    }
-    void set(unsigned long value, bool flHide = false)
-    {
-      type = Datatype::TYPE_UINT;
-      flShow = flAlways || flInit || !(val.big == value);
-      flShow = flShow && !flHide;
-      val.integer = value;
-    }
-    void set(float value, bool flHide = false)
-    {
-      type = Datatype::TYPE_REAL;
-      flShow = flAlways || flInit || !(val.real == value);
-      flShow = flShow && !flHide;
-      val.real = value;
-    }
-    String get()
-    {
-      String result;
-      switch (type)
-      {
-        case Datatype::TYPE_STR:
-          result = String(val.str);
-          break;
-
-        case Datatype::TYPE_BOOL:
-          result = val.boolean ? SERIAL_F("true") : SERIAL_F("false");
-          break;
-
-        case Datatype::TYPE_INT:
-          result = String(val.integer);
-          break;
-
-        case Datatype::TYPE_UINT:
-          result = String(val.big);
-          break;
-
-        case Datatype::TYPE_REAL:
-          result = String(val.real, 4);
-          break;
-
-        case Datatype::TYPE_NONE:
-          result = "n/a";
-          break;
-      }
-      flInit = false;
-      return result;
-    }
-  };
-  //****************************************************************************
-  // Parameters definition
-  //****************************************************************************
-  // Static attributes initiated at boot once
-  Parameter version = Parameter(versionStatic);
-  Parameter broker = Parameter(brokerStatic);
-  Parameter portOTA = Parameter(portOTAStatic);
-  Parameter hostname = Parameter(hostnameStatic);
-  Parameter mcuBoot = Parameter(mcuBootStatic);
-  Parameter addressIP = Parameter(addressIpStatic);
-  Parameter addressMAC = Parameter(addressMacStatic);
-
-  // Dynamic attributes updated immediatelly (EEPROM)
-  Parameter mcuRestarts = Parameter(mcuRestartsPrm);
-  Parameter periodPublish = Parameter(periodPublishPrm);
-
-  // Measures updated immediatelly (events)
-
-  // Measures updated periodically (telemetry)
-  Parameter rssi = Parameter(rssiTelem, true); // Publish always
-  //****************************************************************************
   gbj_timer *timer_;
-  gbj_appwifi *wifi_;
-  char progmemBuffer_[progmemBufferLen];
-  inline const char *getPrmName(const char *progmemPrmName)
-  {
-    strcpy_P(progmemBuffer_, progmemPrmName);
-    return progmemBuffer_;
-  }
 
 private:
   enum Timing : unsigned long

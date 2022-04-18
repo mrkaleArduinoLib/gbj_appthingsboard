@@ -3,7 +3,7 @@
 gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
 {
   // No Wifi
-  if (!wifi_->isConnected())
+  if (!WiFi.isConnected())
   {
     return setLastResult(ResultCodes::ERROR_CONNECT);
   }
