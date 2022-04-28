@@ -15,9 +15,8 @@ This is an application library, which is used usually as a project library for p
 * The library utilizes internal timer for periodical data publishing to <abbr title="Internet of Things">IoT</abbr> platform.
 * The connection to Wifi and to ThingsBoard <abbr title="Internet of Things">IoT</abbr> platform is checked at every loop of a main sketch.
 * If no connection to <abbr title="Internet of Things">IoT</abbr> platform is detected, the library starts the [connection process](#connection).
-* The library subscibes externally defined (in a main sketch) <abbr title="Remote Procedure Call">RPC</abbr> functions to the <abbr title="Internet of Things">IoT</abbr> platform.
+* The library subscribes to externally defined (in a main sketch) <abbr title="Remote Procedure Call">RPC</abbr> functions to the <abbr title="Internet of Things">IoT</abbr> platform.
 * The class from the library is not intended to be used directly in a sketch, just as a parent class for project specific device libraries communicating with <abbr title="Internet of Things">IoT</abbr> platform, e.g., `apptb_device`.
-* The library provides a couple of generic parameters with names stored in flash of the microcontroller and defined in the shared (common) include file `config_params_gen.h`.
 
 
 <a id="internals"></a>
@@ -48,42 +47,13 @@ The connection process is controlled by [internal parameters](#internals) and st
 * When number of failed connections reaches the predefined number for third stage, the library cycles the entire connection process with first stage.
 
 
-<a id="generics"></a>
-
-## Generic publishing parameters
-Library provides definition of following generic parameter names aimed for publishing to IoT platform that are utilized almost in every project.
-
-* They all are protected, so accessible only for derived child classes.
-* The definition name of a parameters defines the name of a parameter (attribute or telemetry measure), which is visibile in IoT platform.
-* The variable of definition name takes name of corresponding parameter with appropriate suffix denoting its role.
-* The variable name of a parameter is usually same as the parameter's name itself.
-
-#### Static attributes initiated at runtime right after boot of the microcontroller or after reconnection to IoT platform, but only once
-  * **version** with definition name `versionStatic`. Semantic version of a firmware version in IoT platform as a client attribute for current microcontroller firmware identifier, e.g. 1.2.3.
-  * **broker** with definition name `brokerStatic`. <abbr title="Internet Protocol">IP</abbr> or <abbr title="Multicast Domain Name System">mDNS</abbr> address of ThingsBoard server, i.e., a computer where the ThingsBoard IoT platform runs and to which the microcontroller is connected.
-  * **hostname** with definition name `hostnameStatic`. Host name of the microcontroller on a WiFi network.
-  * **portOTA** with definition name `portOTAStatic`. <abbr title="Transmission Control Protocol">TCP</abbr> port, there an <abbr title="Hypertext Transfer Protocol">HTTP</abbr> server with functionality of <abbr title="Over The Air">OTA</abbr> listens, usually 80.
-  * **mcuBoot** with definition name `mcuBootStatic`. Boot reason of the recent microcontroller reset in form of name defined in the library `gbj_appcore` and reachable by parent getter `getResetName()`.
-  * **addressIP** with definition name `addressIpStatic`. <abbr title="Internet Protocol">IP</abbr> address of the microcontroller on the network, usually set as static (fixed) one directly by the microcontroller or indirectly by <abbr title="Dynamic Host Configuration Protocol">DHCP</abbr> server.
-  * **addressMAC** with definition name `addressMacStatic`. <abbr title="Media Access Control">MAC</abbr> address of the microcontroller WiFi interface.
-
-#### Dynamic attributes updated immediatelly (usually stored in the EEPROM)
-  * **mcuRestarts** with definition name `mcuRestartsPrm`. Number of the microcontroller restarts initiated by failed attempts at WiFi connection process (similar to this connection process). The parameter is stored in the <abbr title="Electrically Erasable Programmable Read-Only Memory">EEPROM</abbr>. It is published only at change, i.e., after the microcontroller restart (boot) immediatelly, mostly due to failed wifi connection process.
-  * **periodPublish** with definition name `periodPublishPrm`. Current time period for publishing telemetry data to IoT platform. The parameter is stored in the <abbr title="Electrically Erasable Programmable Read-Only Memory">EEPROM</abbr>. It is published only at change by an <abbr title="Remote Procedure Call">RPC</abbr> function immediatelly.
-
-#### Measures updated periodically (telemetry)
-* **rssi** with definition name `rssiTelem`. <abbr title="Received Signal Strength Indicator">RSSI</abbr> value of WiFi connection with the network expressed in <abbr title="Decibel milliwats">dBm</abbr>. It is published at every publish period regardless of it has been changed since recent publishing. The parameter serves as the signal of active microcontroller for IoT platform.
-
-
 <a id="dependency"></a>
 
 ## Dependency
 * **gbj\_appbase**: Parent library for all application libraries loaded from the file `gbj_appbase.h`.
 * **gbj\_serial\_debug**: Auxilliary library for debug serial output loaded from the file `gbj_serial_debug.h`. It enables to exclude serial outputs from final compilation.
 * **gbj\_timer**: Library for executing internal timer within an instance object loaded from the file `gbj_timer.h`.
-* **gbj\_appwifi**: Application library for managing wifi connection loaded from the file `gbj_appwifi.h`.
 * **ThingsBoard**: Library for managing connection to IoT platform loaded from the file `ThingsBoard.h` in library `ThingsBoard-Arduino-MQTT-SDK`.
-* **config_params_gen**: Include file with definition of keys (names) of generic parameters, which the library provides loaded from the file `config_params_gen.h`. It is usually located on a shared location (folder), so that all projects can share and use it.
 
 #### Espressif ESP8266 platform
 * **Arduino.h**: Main include file for the Arduino platform.
@@ -112,7 +82,6 @@ Other constants, enumerations, result codes, and error codes are inherited from 
 ## Custom data types
 * [Handler](#handler)
 * [Handlers](#handlers)
-* [Parameter](#parameter)
 
 ## Interface
 The methods in bold are virtual methods and should be implemented in a project specific libraries.
@@ -174,6 +143,7 @@ Structure of pointers to handlers each for particular event in processing.
 #### Syntax
     struct Handlers
     {
+      Handler *onPublish;
       Handler *onConnectStart;
       Handler *onConnectTry;
       Handler *onConnectSuccess;
@@ -184,6 +154,7 @@ Structure of pointers to handlers each for particular event in processing.
     }
 
 #### Parameters
+* **onPublish**: Pointer to a callback function, which is called right before publishing telemetry measures. This handler is useful for gaining values of measures, for which there is no specific or individual process, e.g., <abbr title="Received Signal Strength Indicator">RSSI</abbr> value of WiFi connection, or which can be fetched from the system directly.
 * **onConnectStart**: Pointer to a callback function, which is called right before a new connection set.
 * **onConnectTry**: Pointer to a callback function, which is called after every failed connection attempt. It allows to observe the pending connection set.
 * **onConnectSuccess**: Pointer to a callback function, which is called right after successful connection to IoT platform.
@@ -207,44 +178,6 @@ gbj_appthingsboard device = gbj_appthingsboard(..., handlersDevice);
 [Handler](#handler)
 
 [gbj_appthingsboard](#gbj_appthingsboard)
-
-[Back to interface](#interface)
-
-
-<a id="parameter"></a>
-
-## Parameter
-
-#### Description
-The structure with members and member methods as a template of an publishing parameter.
-* The structure is protected, so that it is accessable only for derived classes, usually in project specific libraries, which only can define new parameters and their lists.
-* A publishing parameter as an instance of this structure acts as a parameter's cache for the IoT platform.
-* A parameter's cache is updated within particular virtual method implementation in the child class of a project specific library with parameter's setter.
-* By default every parameter is internally marked as publishable only at change. This can be permanently discarded by corresponding constructor's argument or temporarily (for next publishing period only, i.e., until subsequent using new value) by corresponding method.
-
-#### Parameter methods
-* **Parameter(const char *key[, bool always = false])**: Constructor for a parameter and its flag about publishing.
-  * **key**: The name of a parameter as it is used for IoT platform for a measure's key-value pair. The parameter's name is usually stored in flash memory for reducing operational memory usage.
-  * **always**: The optional flag determining the publish mode of parameter. By default it is _false_ and sets that mode for publishing at change only.
-* **void set(_\<datatype\>_ value[, bool flHide = false])**: The setter for updating a parameter.
-  * **value**: The new value of the parameter. Its valid data types are:
-    1. const char* - pointer to an external string buffer
-    2. String
-    3. bool
-    4. int
-    5. long
-    6. unsigned int
-    7. unsigned long
-    8. float
-  * **flHide**: The optional flag determining the suppressing the publishing of the parameter for the next publishing period. It is useful for filtering improper or unreasonable parameter's values from publishing. It might be an appropriate logical expression or a function call.
-* **char *getName()**: The getter returns the parameter's name for publishing purposes.
-* **String get()**: The parameter's getter returns the parameter's current value for publishing purposes. It always converts the original value of the parameter to data type _String_. The result can be published to IoT platform even if it has the data type not supported by that platform. At the same time the getter sets the internal flag, which determines that the parameter has been already initiated, i.e., initially published. From now on the parameter's publishing mode comes into force.
-* **bool isReady()**: It determines whether the publishing of the parameter is available.
-* **void init()**: It forces the publishing of the parameter for the next publishing period as the parameter would used for the first time. It is useful, e.g., for publishing long time stable telemetry measures at particular multiple of a publishing period.
-* **void hide()**: It suppresses the publishing of the parameter for the next publishing period. It is useful, e.g., at detecting improper or unreasonable parameter's value within pending publishing period. The result of this method is the same as using positive second argument _flHide_ at method _set_.
-
-#### See also
-[Generic publishing parameters](#generics)
 
 [Back to interface](#interface)
 
