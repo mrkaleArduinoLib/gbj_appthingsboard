@@ -1,12 +1,13 @@
 {
   "name": "gbj_appthingsboard",
-  "keywords": "application",
+  "version": "1.7.0",
   "description": "Library executes connection to ThingsBoard IoT platform over MQTT.",
+  "keywords": "application",
   "repository": {
     "type": "git",
     "url": "https://github.com/mrkaleArduinoLib/gbj_appthingsboard.git"
   },
-  "version": "1.7.0",
+  "license": "MIT",
   "frameworks": "arduino",
   "platforms": [
     "espressif8266",
