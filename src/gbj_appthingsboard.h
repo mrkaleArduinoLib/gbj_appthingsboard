@@ -39,7 +39,7 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const char *VERSION = "GBJ_APPTHINGSBOARD 1.7.0";
+  const char *VERSION = "GBJ_APPTHINGSBOARD 1.8.0";
 
   typedef void Handler();
 
@@ -53,6 +53,7 @@ public:
     Handler *onDisconnect;
     Handler *onSubscribeSuccess;
     Handler *onSubscribeFail;
+    Handler *onRestart;
   };
 
   /*
@@ -276,6 +277,7 @@ private:
     PARAM_CONN_1 = 6, // 6 attemps with PERIOD_CONN1 delay
     PARAM_CONN_2 = 11, // 5 attemps with PERIOD_CONN2 delay
     PARAM_CONN_3 = 23, // 12 attemps with PERIOD_CONN3 delay
+    PARAM_CYCLES = 3, // Failed cycles for MCU restart
   };
   struct Status
   {

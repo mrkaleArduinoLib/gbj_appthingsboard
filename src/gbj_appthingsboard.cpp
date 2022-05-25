@@ -43,6 +43,17 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     status_.cycles++;
     status_.stage = 1;
     status_.fails = 0;
+    // Restart MCU
+    if (status_.cycles >= Params::PARAM_CYCLES)
+    {
+      SERIAL_TITLE("MCU Restart")
+      if (handlers_.onRestart)
+      {
+        handlers_.onRestart();
+      }
+      ESP.restart();
+    }
+    setLastResult(ResultCodes::ERROR_CONNECT);
   }
   // Wait for next connection
   if (status_.tsRetry && millis() - status_.tsRetry < period)
