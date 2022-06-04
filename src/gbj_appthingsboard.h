@@ -39,7 +39,7 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const char *VERSION = "GBJ_APPTHINGSBOARD 1.8.0";
+  const char *VERSION = "GBJ_APPTHINGSBOARD 1.9.0";
 
   typedef void Handler();
 
@@ -245,11 +245,14 @@ public:
   virtual ResultCodes publishAttribsDynamic() = 0;
 
   // Set timer period inputed as unsigned long in milliseconds
-  inline void setPeriod(unsigned long period) { timer_->setPeriod(period); }
+  inline void setPeriod(unsigned long period)
+  {
+    timer_->setPeriod(period == 0 ? Timing::PERIOD_PUBLISH : period);
+  }
   // Set timer period inputed as String in seconds
   inline void setPeriod(String period)
   {
-    timer_->setPeriod(1000 * (unsigned long)period.toInt());
+    setPeriod(1000 * (unsigned long)period.toInt());
   }
 
   // Getters

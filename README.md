@@ -99,8 +99,8 @@ The methods in bold are virtual methods and should be implemented in a project s
 * [publishAttribsBatch()](#publishAttribsBatch)
 * [**publishAttribsStatic()**](#publish)
 * [**publishAttribsDynamic()**](#publish)
-* [**setPeriod()**](#period)
-* [**getPeriod()**](#period)
+* [**setPeriod()**](#setPeriod)
+* [**getPeriod()**](#getPeriod)
 * [getPrmName()](#getPrmName)
 * [getStage()](#getConnStat)
 * [getFails()](#getConnStat)
@@ -506,12 +506,58 @@ Some of [result or error codes](#constants) from the parent class.
 [Back to interface](#interface)
 
 
-<a id="period"></a>
+<a id="setPeriod"></a>
 
-## setPeriod(), getPeriod()
+## setPeriod()
 
 #### Description
-The methods are just straitforward implementation of the virual methods from the parent class.
+The overloaded method sets a new period of the internal timer in milliseconds input either in milliseconds or in seconds.
+* The method with numerical input argument is the implementation of the virtual methods from the parent class.
+* The method with textual input argument is useful with conjunction with a project data hub, which data has always string data type.
+* If input period is zero or not numerical (leading to zero), the library sets the [internal default Publishing period](#internals).
+
+#### Syntax
+    void setPeriod(unsigned long period)
+    void setPeriod(String periodSec)
+
+#### Parameters
+* **period**: Duration of a repeating interval of the internal timers in milliseconds.
+  * *Valid values*: 0 ~ 2^32 - 1
+  * *Default value*: none
+
+
+* **periodSec**: Duration of a repeating interval of the internal timers in seconds declared as string.
+  * *Valid values*: String
+  * *Default value*: none
+
+#### Returns
+None
+
+#### See also
+[getPeriod()](#getPeriod)
+
+[Back to interface](#interface)
+
+
+<a id="getPeriod"></a>
+
+## getPeriod()
+
+#### Description
+The method returns current period of the internal timer.
+* The method is the implementation of the virtual methods from the parent class.
+
+#### Syntax
+    unsigned long getPeriod()
+
+#### Parameters
+None
+
+#### Returns
+Current timer period in milliseconds.
+
+#### See also
+[setPeriod()](#setPeriod)
 
 [Back to interface](#interface)
 
