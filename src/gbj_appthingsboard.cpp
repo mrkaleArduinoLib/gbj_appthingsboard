@@ -43,15 +43,25 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     status_.cycles++;
     status_.stage = 1;
     status_.fails = 0;
-    // Restart MCU
+    // Fallback
     if (status_.cycles >= Params::PARAM_CYCLES)
     {
-      SERIAL_TITLE("MCU Restart")
-      if (handlers_.onRestart)
+      status_.server++;
+      if (status_.server < status_.ips)
       {
-        handlers_.onRestart();
+        // Next server address
+        status_.cycles = 0;
       }
-      ESP.restart();
+      else
+      {
+        // Restart MCU
+        SERIAL_TITLE("MCU Restart")
+        if (handlers_.onRestart)
+        {
+          handlers_.onRestart();
+        }
+        ESP.restart();
+      }
     }
     setLastResult(ResultCodes::ERROR_CONNECT);
   }
@@ -67,13 +77,13 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   }
   SERIAL_ACTION("Connection to TB...")
   // Successful connection
-  if (thingsboard_->connect(server_, token_))
+  if (thingsboard_->connect(servers_[status_.server], token_))
   {
     SERIAL_ACTION_END("Success")
     SERIAL_VALUE("stage", status_.stage)
     SERIAL_VALUE("fails", status_.fails)
     SERIAL_VALUE("cycles", status_.cycles)
-    SERIAL_VALUE("server", server_)
+    SERIAL_VALUE("server", servers_[status_.server])
     SERIAL_VALUE("token", token_)
     if (handlers_.onConnectSuccess)
     {
@@ -91,6 +101,7 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     SERIAL_VALUE("stage", status_.stage)
     SERIAL_VALUE("fails", status_.fails)
     SERIAL_VALUE("cycles", status_.cycles)
+    SERIAL_VALUE("server", status_.server)
     status_.flSubscribed = false;
     if (handlers_.onConnectFail)
     {

@@ -39,7 +39,7 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const char *VERSION = "GBJ_APPTHINGSBOARD 1.9.0";
+  const char *VERSION = "GBJ_APPTHINGSBOARD 1.10.0";
 
   typedef void Handler();
 
@@ -68,6 +68,10 @@ public:
       - Data type: constant string
       - Default value: none
       - Limited range: none
+    server_fallback - Alternative IP address of a ThingsBoard server.
+      - Data type: constant string
+      - Default value: none
+      - Limited range: none
     token - Device authorization token.
       - Data type: constant string
       - Default value: none
@@ -80,11 +84,14 @@ public:
     RETURN: object
   */
   inline gbj_appthingsboard(const char *server,
+                            const char *server_fallback,
                             const char *token,
                             Handlers handlers = Handlers())
   {
-    server_ = server;
     token_ = token;
+    servers_[0] = server;
+    servers_[1] = server_fallback;
+    status_.ips = strlen(server_fallback) ? 2 : 1;
     handlers_ = handlers;
     timer_ = new gbj_timer(Timing::PERIOD_PUBLISH);
   }
@@ -260,9 +267,9 @@ public:
   inline byte getStage() { return status_.stage; }
   inline byte getFails() { return status_.fails; }
   inline byte getCycles() { return status_.cycles; }
-  inline const char *getServer() { return server_; }
   inline bool isConnected() { return thingsboard_->connected(); }
   inline bool isSubscribed() { return status_.flSubscribed; }
+  inline const char *getServer() { return servers_[status_.server]; }
 
 protected:
   gbj_timer *timer_;
@@ -280,11 +287,12 @@ private:
     PARAM_CONN_1 = 6, // 6 attemps with PERIOD_CONN1 delay
     PARAM_CONN_2 = 11, // 5 attemps with PERIOD_CONN2 delay
     PARAM_CONN_3 = 23, // 12 attemps with PERIOD_CONN3 delay
-    PARAM_CYCLES = 3, // Failed cycles for MCU restart
+    PARAM_CYCLES = 3, // Failed cycles for fallback IP or MCU restart
   };
   struct Status
   {
     byte fails, cycles, stage;
+    byte server, ips;
     unsigned long tsRetry;
     bool flConnGain, flSubscribed, flStatics;
     void init()
@@ -297,7 +305,7 @@ private:
   WiFiClient wificlient_;
   ThingsBoardSized<256, 16> *thingsboard_ =
     new ThingsBoardSized<256, 16>(wificlient_);
-  const char *server_;
+  const char *servers_[2];
   const char *token_;
   // Handlers
   Handlers handlers_;

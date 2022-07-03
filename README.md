@@ -13,10 +13,11 @@ This is an application library, which is used usually as a project library for p
 
 ## Fundamental functionality
 * The library utilizes internal timer for periodical data publishing to <abbr title="Internet of Things">IoT</abbr> platform.
-* The connection to Wifi and to ThingsBoard <abbr title="Internet of Things">IoT</abbr> platform is checked at every loop of a main sketch.
-* If no connection to <abbr title="Internet of Things">IoT</abbr> platform is detected, the library starts the [connection process](#connection).
-* The library subscribes to externally defined (in a main sketch) <abbr title="Remote Procedure Call">RPC</abbr> functions to interact with the <abbr title="Internet of Things">IoT</abbr> platform.
-* The class from the library is not intended to be used directly in a sketch, just as a parent class for project specific device libraries communicating with <abbr title="Internet of Things">IoT</abbr> platform, e.g., `apptb_device`.
+* The connection to Wifi and to ThingsBoard IoT platform is checked at every loop of a main sketch.
+* The library utilizes main and alternative (fallback) IP address of an IoT platform. They might be ethernet and wifi addresses of the same ThingsBoard server.
+* If no connection to IoT platform is detected, the library starts the [connection process](#connection).
+* The library subscribes to externally defined (in a main sketch) <abbr title="Remote Procedure Call">RPC</abbr> functions to interact with the IoT platform.
+* The class from the library is not intended to be used directly in a sketch, just as a parent class for project specific device libraries communicating with IoT platform, e.g., `apptb_device`.
 
 
 <a id="internals"></a>
@@ -33,7 +34,10 @@ After reaching this number of connection fails, the library starts next connecti
 * **2nd stage number of failed connection attempts** (`11`): It is a number of cummulative failed connections with waiting among them for _medium time period_. The number of failed connections at this stage of connection process is difference between the cummulative number and number for previous stage, i.e., 11 - 6 = `5`. With the aforementioned time period for this stage, its duration including IoT platform timeouts is `325 seconds`, i.e., 5 minutes and 25 seconds.
 After reaching this number of connection fails, the library starts next connection stage.
 * **3rd stage number of failed connection attempts** (`23`): It is a number of cummulative failed connections with waiting among them for _long time period_. The number of failed connections at this stage of connection process is difference between the cummulative number and number for previous stage, i.e., 23 - 11 = `12`. With the aforementioned time period for this stage, its duration including IoT platform timeouts is `3660 seconds`, i.e., 1 hour and 1 minute. After reaching this number of connection fails, the library repeates the connection process from scratch with the first stage.
-* **Connection processes to restart** (`3`): It is a number of failed connection processes, after whitch the library restarts the microcontroller. This behaviour is considered as a backup scenario for weird cases when the WiFi instance object returns status, that the microcontroller is connected to WiFi network, but in fact it is not, so that the microcontroler cannot connect to IoT platform as well.
+* **Connection processes to fallback IP address or MCU restart** (`3`): It is a number of failed connection processes, after which the library
+  * at first uses an alternative (fallback) IP address of an IoT platform, if it is defined, and repeates the connection process,
+  * at second restarts the microcontroller, if a fallback IP address has failed or is not defined.
+This behaviour is considered as a backup scenario for weird cases when the WiFi instance object returns status, that the microcontroller is connected to WiFi network, but in fact it is not, so that the microcontroler cannot connect to IoT platform as well, or a ThingsBoard changes its IP address at reconnecting, e.g., from the ethernet interface to the wifi one.
 
 
 <a id="connection"></a>
@@ -44,7 +48,7 @@ The connection process is composed of 3 stages aiming to be robust. It gives the
 The connection process is controlled by [internal parameters](#internals) and starts at the first stage with short waiting time period.
 * When number of failed connections reaches the predefined value for first stage, the library increases the waiting period for second stage with medium time period.
 * When number of failed connections reaches the predefined value for second stage, the library increases the waiting period for third stage with long time period.
-* When number of failed connections reaches the predefined value for third stage, the library cycles the entire connection process with first stage.
+* When number of failed connections reaches the predefined value for third stage, the library cycles the entire connection process with first stage and utilizes the alternative IP address of IoT platform, if it is defined.
 * When number of failed connection processes reaches the predefined value, the library restarts the microcontroller.
 
 
@@ -88,7 +92,6 @@ Other constants, enumerations, result codes, and error codes are inherited from 
 The methods in bold are virtual methods and should be implemented in a project specific libraries.
 
 * [gbj_appthingsboard()](#gbj_appthingsboard)
-* [begin()](#begin)
 * [callbacks()](#callbacks)
 * [**run()**](#run)
 * [**publishEvents()**](#publish)
@@ -105,6 +108,7 @@ The methods in bold are virtual methods and should be implemented in a project s
 * [getStage()](#getConnStat)
 * [getFails()](#getConnStat)
 * [getCycles()](#getConnStat)
+* [getServer()](#getServer)
 * [isConnected()](#isConnected)
 * [isSubscribed()](#isSubscribed)
 
@@ -195,10 +199,15 @@ Constructor creates the class instance object and initiates internal resources.
 * It creates an internal timer for periodical data publishing.
 
 #### Syntax
-    gbj_appthingsboard(const char *server, const char *token, Handlers handlers)
+    gbj_appthingsboard(const char *server, const char *server_fallback, const char *token, Handlers handlers)
 
 #### Parameters
-* **server**: Pointer to an address of ThingsBoard server. It should be either IP address, mDNS address, or web address.
+* **server**: Pointer to an address of ThingsBoard server. It should be either IP address or web address.
+  * *Valid values*: constant pointer to string
+  * *Default value*: none
+
+
+* **server_fallback**: Pointer to an altenative address of ThingsBoard server. It should be either IP address or web address.
   * *Valid values*: constant pointer to string
   * *Default value*: none
 
@@ -217,39 +226,6 @@ Object performing connection and reconnection to the IoT platform.
 
 #### See also
 [Handlers()](#handlers)
-
-[Back to interface](#interface)
-
-
-<a id="begin"></a>
-
-## begin()
-
-#### Description
-The initialization method of the instance object, which should be called in the setup section of a sketch.
-* The method realizes the dependency injection of utilized external objects.
-
-#### Syntax
-	void begin(gbj_appwifi *wifi)
-
-#### Parameters
-* **wifi**: Pointer to the instance object for processing WiFi connection.
-  * *Valid values*: pointer to an object of type `gbj_appwifi`
-  * *Default value*: none
-
-#### Returns
-None
-
-#### Example
-Initialization instance object in the sketch loop. Instantiation of the library is only for illustration here. Use the appropriate child class of a project specific library instead.
-```cpp
-gbj_appwifi wifi = gbj_appwifi(...);
-gbj_appthingsboard device = gbj_appthingsboard("MyServer", "MyToken", handlersDevice);
-void setup()
-{
-  device.begin(&wifi);
-}
-```
 
 [Back to interface](#interface)
 
@@ -603,6 +579,25 @@ None
 * **getStage** returns current stage of the connection process, which determines waiting time period among connection attempts.
 * **getFails** returns current number of failed connection attempts withing pending connection cycle of the connection process, which determines threshold for changing waiting time period.
 * **getCycles** returns number of concluded connection cycles of the connection process, which determines how many times the connection process has been repeated.
+
+[Back to interface](#interface)
+
+
+<a id="getServer"></a>
+
+## getServer()
+
+#### Description
+The method returns a pointer to an IP address of the ThingsBoard server, which is used for connection to IoT platform.
+
+#### Syntax
+    const char *getServer()
+
+#### Parameters
+None
+
+#### Returns
+Pointer to connected IP address of IoT platform.
 
 [Back to interface](#interface)
 
