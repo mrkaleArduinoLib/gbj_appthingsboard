@@ -75,16 +75,16 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   {
     handlers_.onConnectStart();
   }
-  SERIAL_ACTION("Connection to TB...")
+  SERIAL_VALUE("Connecting to", "ThingsBoard")
   // Successful connection
   if (thingsboard_->connect(servers_[status_.server], token_))
   {
-    SERIAL_ACTION_END("Success")
+    SERIAL_VALUE("Connection", "Success")
+    SERIAL_VALUE("Server", servers_[status_.server])
+    SERIAL_VALUE("Token", token_)
     SERIAL_VALUE("stage", status_.stage)
     SERIAL_VALUE("fails", status_.fails)
     SERIAL_VALUE("cycles", status_.cycles)
-    SERIAL_VALUE("server", servers_[status_.server])
-    SERIAL_VALUE("token", token_)
     if (handlers_.onConnectSuccess)
     {
       handlers_.onConnectSuccess();
@@ -97,11 +97,11 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   {
     status_.tsRetry = millis();
     status_.fails++;
-    SERIAL_ACTION_END("Fail")
+    SERIAL_VALUE("Connection", "Fail")
+    SERIAL_VALUE("Server", status_.server)
     SERIAL_VALUE("stage", status_.stage)
     SERIAL_VALUE("fails", status_.fails)
     SERIAL_VALUE("cycles", status_.cycles)
-    SERIAL_VALUE("server", status_.server)
     status_.flSubscribed = false;
     if (handlers_.onConnectFail)
     {

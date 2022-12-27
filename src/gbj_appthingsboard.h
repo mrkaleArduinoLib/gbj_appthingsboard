@@ -39,7 +39,7 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const char *VERSION = "GBJ_APPTHINGSBOARD 1.10.0";
+  const char *VERSION = "GBJ_APPTHINGSBOARD 1.11.0";
 
   typedef void Handler();
 
