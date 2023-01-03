@@ -19,54 +19,8 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
       handlers_.onDisconnect();
     }
   }
-  // Calculate waiting period
-  unsigned long period;
-  if (status_.fails < Params::PARAM_CONN_1)
-  {
-    period = Timing::PERIOD_CONN_1;
-    status_.stage = 1;
-  }
-  else if (status_.fails < Params::PARAM_CONN_2)
-  {
-    period = Timing::PERIOD_CONN_2;
-    status_.stage = 2;
-  }
-  else if (status_.fails < Params::PARAM_CONN_3)
-  {
-    period = Timing::PERIOD_CONN_3;
-    status_.stage = 3;
-  }
-  // Repeate connection cycle
-  else
-  {
-    period = Timing::PERIOD_CONN_1;
-    status_.cycles++;
-    status_.stage = 1;
-    status_.fails = 0;
-    // Fallback
-    if (status_.cycles >= Params::PARAM_CYCLES)
-    {
-      status_.server++;
-      if (status_.server < status_.ips)
-      {
-        // Next server address
-        status_.cycles = 0;
-      }
-      else
-      {
-        // Restart MCU
-        SERIAL_TITLE("MCU Restart")
-        if (handlers_.onRestart)
-        {
-          handlers_.onRestart();
-        }
-        ESP.restart();
-      }
-    }
-    setLastResult(ResultCodes::ERROR_CONNECT);
-  }
-  // Wait for next connection
-  if (status_.tsRetry && millis() - status_.tsRetry < period)
+  // Wait for connection
+  if (status_.tsRetry && millis() - status_.tsRetry < Timing::PERIOD_CONN)
   {
     return setLastResult(ResultCodes::ERROR_NOINIT);
   }
@@ -77,14 +31,12 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
   }
   SERIAL_VALUE("Connecting to", "ThingsBoard")
   // Successful connection
-  if (thingsboard_->connect(servers_[status_.server], token_))
+  if (thingsboard_->connect(server_, token_))
   {
     SERIAL_VALUE("Connection", "Success")
-    SERIAL_VALUE("Server", servers_[status_.server])
+    SERIAL_VALUE("Server", server_)
     SERIAL_VALUE("Token", token_)
-    SERIAL_VALUE("stage", status_.stage)
     SERIAL_VALUE("fails", status_.fails)
-    SERIAL_VALUE("cycles", status_.cycles)
     if (handlers_.onConnectSuccess)
     {
       handlers_.onConnectSuccess();
@@ -98,10 +50,8 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
     status_.tsRetry = millis();
     status_.fails++;
     SERIAL_VALUE("Connection", "Fail")
-    SERIAL_VALUE("Server", status_.server)
-    SERIAL_VALUE("stage", status_.stage)
+    SERIAL_VALUE("Server", server_)
     SERIAL_VALUE("fails", status_.fails)
-    SERIAL_VALUE("cycles", status_.cycles)
     status_.flSubscribed = false;
     if (handlers_.onConnectFail)
     {

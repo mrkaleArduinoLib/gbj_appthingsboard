@@ -14,8 +14,7 @@ This is an application library, which is used usually as a project library for p
 ## Fundamental functionality
 * The library utilizes internal timer for periodical data publishing to <abbr title="Internet of Things">IoT</abbr> platform.
 * The connection to Wifi and to ThingsBoard IoT platform is checked at every loop of a main sketch.
-* The library utilizes main and alternative (fallback) IP address of an IoT platform. They might be ethernet and wifi addresses of the same ThingsBoard server.
-* If no connection to IoT platform is detected, the library starts the [connection process](#connection).
+* If no connection to IoT platform is detected, the library repeats connecting after [internal Connection waiting period](#internals) again. It is up to an application and/or an external watchdog timer to restart the microcontroller after some failed connection attempts.
 * The library subscribes to externally defined (in a main sketch) <abbr title="Remote Procedure Call">RPC</abbr> functions to interact with the IoT platform.
 * The class from the library is not intended to be used directly in a sketch, just as a parent class for project specific device libraries communicating with IoT platform, e.g., `apptb_device`.
 
@@ -26,30 +25,7 @@ This is an application library, which is used usually as a project library for p
 Internal parameters are hard-coded in the library as enumerations and none of them have setters or getters associated. The waiting for next connection attempt is in non-blocking mode. However, waiting on IoT platform connection `timeout is cca 5 seconds` in either case.
 
 * **Publishing period** (`12 seconds`): It is a default time period for publishing data to IoT platform. Real publishing period is associated with corresponding setter and getter.
-* **1st stage time period of waiting for next connection attempt** (`5 seconds`): It is a time period during which the system is waiting for next attempt to connect to IoT platform at this stage of connection process. The real time period between failed connection attempts is increased by the IoT platform timeout, so that the real time period among attempts is cca `10 seconds`.
-* **2nd stage time period of waiting for next connection attempt** (`1 minute`): It is a time period during which the system is waiting for next attempt to connect to IoT platform at this stage of connection process. The real time period among failed connection attempts is increased by the IoT platform timeout, so that the real time period among attempts is cca `65 seconds`.
-* **3rd stage time period of waiting for next connection attempt** (`5 minutes`): It is a time period during which the system is waiting for next attempt to connect to IoT platform at this stage of connection process. The real time period among failed connection attempts is increased by the IoT platform timeout, so that the real time period among attempts is cca `305 seconds`.
-* **1st stage number of failed connection attempts** (`6`): It is a number of failed connections with waiting among them for _short time period_. With the aforementioned time period for this stage, its duration including IoT platform timeouts is `60 seconds`, i.e. 1 minute.
-After reaching this number of connection fails, the library starts next connection stage.
-* **2nd stage number of failed connection attempts** (`11`): It is a number of cummulative failed connections with waiting among them for _medium time period_. The number of failed connections at this stage of connection process is difference between the cummulative number and number for previous stage, i.e., 11 - 6 = `5`. With the aforementioned time period for this stage, its duration including IoT platform timeouts is `325 seconds`, i.e., 5 minutes and 25 seconds.
-After reaching this number of connection fails, the library starts next connection stage.
-* **3rd stage number of failed connection attempts** (`23`): It is a number of cummulative failed connections with waiting among them for _long time period_. The number of failed connections at this stage of connection process is difference between the cummulative number and number for previous stage, i.e., 23 - 11 = `12`. With the aforementioned time period for this stage, its duration including IoT platform timeouts is `3660 seconds`, i.e., 1 hour and 1 minute. After reaching this number of connection fails, the library repeates the connection process from scratch with the first stage.
-* **Connection processes to fallback IP address or MCU restart** (`3`): It is a number of failed connection processes, after which the library
-  * at first uses an alternative (fallback) IP address of an IoT platform, if it is defined, and repeates the connection process,
-  * at second restarts the microcontroller, if a fallback IP address has failed or is not defined.
-This behaviour is considered as a backup scenario for weird cases when the WiFi instance object returns status, that the microcontroller is connected to WiFi network, but in fact it is not, so that the microcontroler cannot connect to IoT platform as well, or a ThingsBoard changes its IP address at reconnecting, e.g., from the ethernet interface to the wifi one.
-
-
-<a id="connection"></a>
-
-## Connection process
-The connection process is composed of 3 stages aiming to be robust. It gives the chance either the microcontroller itself or IoT platform to recover from failure and when connect automatically. On the other hand, failed connection attempts block the microcontroller as less as possible, mostly due to IoT platform timeout. If a connection attemp is successful, the library breaks entire connection process and goes to connection checking mode. The library provides handlers and getters for observing connection process, e.g., for statistical purposes.
-
-The connection process is controlled by [internal parameters](#internals) and starts at the first stage with short waiting time period.
-* When number of failed connections reaches the predefined value for first stage, the library increases the waiting period for second stage with medium time period.
-* When number of failed connections reaches the predefined value for second stage, the library increases the waiting period for third stage with long time period.
-* When number of failed connections reaches the predefined value for third stage, the library cycles the entire connection process with first stage and utilizes the alternative IP address of IoT platform, if it is defined.
-* When number of failed connection processes reaches the predefined value, the library restarts the microcontroller.
+* **Connection waiting period** (`1 minute`): It is a time period during which the system is waiting for next attempt to connect to IoT platform. The real time period between failed connection attempts is increased by the IoT platform timeout, so that the real time period among attempts is cca `65 seconds`.
 
 
 <a id="dependency"></a>
@@ -105,9 +81,7 @@ The methods in bold are virtual methods and should be implemented in a project s
 * [**setPeriod()**](#setPeriod)
 * [**getPeriod()**](#getPeriod)
 * [getPrmName()](#getPrmName)
-* [getStage()](#getConnStat)
-* [getFails()](#getConnStat)
-* [getCycles()](#getConnStat)
+* [getFails()](#getFails)
 * [getServer()](#getServer)
 * [isConnected()](#isConnected)
 * [isSubscribed()](#isSubscribed)
@@ -199,15 +173,10 @@ Constructor creates the class instance object and initiates internal resources.
 * It creates an internal timer for periodical data publishing.
 
 #### Syntax
-    gbj_appthingsboard(const char *server, const char *server_fallback, const char *token, Handlers handlers)
+    gbj_appthingsboard(const char *server, const char *token, Handlers handlers)
 
 #### Parameters
 * **server**: Pointer to an address of ThingsBoard server. It should be either IP address or web address.
-  * *Valid values*: constant pointer to string
-  * *Default value*: none
-
-
-* **server_fallback**: Pointer to an altenative address of ThingsBoard server. It should be either IP address or web address.
   * *Valid values*: constant pointer to string
   * *Default value*: none
 
@@ -258,7 +227,7 @@ None
 #### Example
 Initialization instance object in the sketch loop. Instantiation of the library is only for illustration here. Use the appropriate child class of a project specific library instead.
 ```cpp
-PC_Response processSetDelay(const RPC_Data &data){...}
+RPC_Response processSetDelay(const RPC_Data &data){...}
 RPC_Response processGetDelay(const RPC_Data &data){...}
 RPC_Response processCommand(const RPC_Data &data){...}
 const size_t callbacks_size = 3;
@@ -286,6 +255,15 @@ The execution method as the implementation of the virtual method from parent cla
 * The method connects to the IoT platform at the very first calling it.
 * At the start of each timer period the method checks the connection to the wifi network as well as to the IoT platform. If wifi network is available, it reconnects to the IoT platform if neccesary.
 * If the serial connection is active, the library outputs flow of the connection and at success lists input credentials of the connection to the IoT platform.
+
+#### Syntax
+    void run()
+
+#### Parameters
+None
+
+#### Returns
+None
 
 [Back to interface](#interface)
 
@@ -560,25 +538,22 @@ Pointer to a parameter name.
 [Back to interface](#interface)
 
 
-<a id="getConnStat"></a>
+<a id="getFails"></a>
 
-## getStage(), getFails(), getCycles()
+## getFails()
 
 #### Description
-The corresponding method returns a measure of pending connection process, which can be used for statistical evaluation of the process, especially in particular handlers.
+The method returns number of failed connection attempts since booting or recent successful connection.
+* This published value can be used for disabling a heartbeating in an application and to restart the microcontroller by an external watchdog timer.
 
 #### Syntax
-    byte getStage()
     byte getFails()
-    byte getCycles()
 
 #### Parameters
 None
 
 #### Returns
-* **getStage** returns current stage of the connection process, which determines waiting time period among connection attempts.
-* **getFails** returns current number of failed connection attempts withing pending connection cycle of the connection process, which determines threshold for changing waiting time period.
-* **getCycles** returns number of concluded connection cycles of the connection process, which determines how many times the connection process has been repeated.
+Returns current number of failed connection attempts.
 
 [Back to interface](#interface)
 

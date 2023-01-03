@@ -39,7 +39,7 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const char *VERSION = "GBJ_APPTHINGSBOARD 1.11.0";
+  const char *VERSION = "GBJ_APPTHINGSBOARD 1.12.0";
 
   typedef void Handler();
 
@@ -68,10 +68,6 @@ public:
       - Data type: constant string
       - Default value: none
       - Limited range: none
-    server_fallback - Alternative IP address of a ThingsBoard server.
-      - Data type: constant string
-      - Default value: none
-      - Limited range: none
     token - Device authorization token.
       - Data type: constant string
       - Default value: none
@@ -84,14 +80,11 @@ public:
     RETURN: object
   */
   inline gbj_appthingsboard(const char *server,
-                            const char *server_fallback,
                             const char *token,
                             Handlers handlers = Handlers())
   {
     token_ = token;
-    servers_[0] = server;
-    servers_[1] = server_fallback;
-    status_.ips = strlen(server_fallback) ? 2 : 1;
+    server_ = server;
     handlers_ = handlers;
     timer_ = new gbj_timer(Timing::PERIOD_PUBLISH);
   }
@@ -264,12 +257,10 @@ public:
 
   // Getters
   inline unsigned long getPeriod() { return timer_->getPeriod(); }
-  inline byte getStage() { return status_.stage; }
   inline byte getFails() { return status_.fails; }
-  inline byte getCycles() { return status_.cycles; }
   inline bool isConnected() { return thingsboard_->connected(); }
   inline bool isSubscribed() { return status_.flSubscribed; }
-  inline const char *getServer() { return servers_[status_.server]; }
+  inline const char *getServer() { return server_; }
 
 protected:
   gbj_timer *timer_;
@@ -278,26 +269,16 @@ private:
   enum Timing : unsigned long
   {
     PERIOD_PUBLISH = 12 * 1000,
-    PERIOD_CONN_1 = 5 * 1000, // It is ThingsBoard timeout as well
-    PERIOD_CONN_2 = 1 * 60 * 1000,
-    PERIOD_CONN_3 = 5 * 60 * 1000,
-  };
-  enum Params : byte
-  {
-    PARAM_CONN_1 = 6, // 6 attemps with PERIOD_CONN1 delay
-    PARAM_CONN_2 = 11, // 5 attemps with PERIOD_CONN2 delay
-    PARAM_CONN_3 = 23, // 12 attemps with PERIOD_CONN3 delay
-    PARAM_CYCLES = 3, // Failed cycles for fallback IP or MCU restart
+    PERIOD_CONN = 1 * 60 * 1000,
   };
   struct Status
   {
-    byte fails, cycles, stage;
-    byte server, ips;
+    byte fails;
     unsigned long tsRetry;
     bool flConnGain, flSubscribed, flStatics;
     void init()
     {
-      fails = cycles = stage = tsRetry = 0;
+      fails = tsRetry = 0;
       flConnGain = true;
     }
   } status_;
@@ -305,8 +286,7 @@ private:
   WiFiClient wificlient_;
   ThingsBoardSized<256, 16> *thingsboard_ =
     new ThingsBoardSized<256, 16>(wificlient_);
-  const char *servers_[2];
-  const char *token_;
+  const char *server_, *token_;
   // Handlers
   Handlers handlers_;
   RPC_Callback *callbacks_;
