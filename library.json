@@ -1,6 +1,6 @@
 {
   "name": "gbj_appthingsboard",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "description": "Library executes connection to ThingsBoard IoT platform over MQTT.",
   "keywords": "application",
   "repository": {
@@ -17,6 +17,6 @@
     "mrkaleArduinoLib/gbj_appbase": "*",
     "mrkaleArduinoLib/gbj_serial_debug": "*",
     "mrkaleArduinoLib/gbj_timer": "*",
-    "mrkaleArduinoLib/ThingsBoard-Arduino-MQTT-SDK": ">0.5.0"
+    "thingsboard/ThingsBoard": "0.6"
   }
 }

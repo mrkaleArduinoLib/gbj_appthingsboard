@@ -209,11 +209,11 @@ The registration method for subscribing external functions as <abbr title="Remot
 * The method subscribes all external function in the input list.
 
 #### Syntax
-	void callbacks(RPC_Callback *callbacks = 0, size_t callbacks_size = 0)
+	void callbacks(const RPC_Callback *callbacks, size_t callbacks_size)
 
 #### Parameters
-* **callbacks**: Array (list) of external function to be subscribed.
-  * *Valid values*: pointer to an array of type `RPC_Callback`
+* **callbacks**: Constant vector (array, list) of external functions to be subscribed.
+  * *Valid values*: pointer to a vector of type `RPC_Callback`
   * *Default value*: 0
 
 
@@ -230,8 +230,7 @@ Initialization instance object in the sketch loop. Instantiation of the library 
 RPC_Response processSetDelay(const RPC_Data &data){...}
 RPC_Response processGetDelay(const RPC_Data &data){...}
 RPC_Response processCommand(const RPC_Data &data){...}
-const size_t callbacks_size = 3;
-RPC_Callback callbacks[callbacks_size] = {
+const std::vector<RPC_Callback> callbacks = {
   { "setValue", processSetDelay },
   { "getValue", processGetDelay },
   { "rpcCommand", processCommand },
@@ -239,7 +238,7 @@ RPC_Callback callbacks[callbacks_size] = {
 gbj_appthingsboard device = gbj_appthingsboard(...);
 void setup()
 {
-  device.callbacks(callbacks, callbacks_size);
+  device.callbacks(callbacks.data(), callbacks.size());
 }
 ```
 

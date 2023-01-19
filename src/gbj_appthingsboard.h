@@ -39,7 +39,7 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const char *VERSION = "GBJ_APPTHINGSBOARD 1.12.0";
+  const char *VERSION = "GBJ_APPTHINGSBOARD 1.13.0";
 
   typedef void Handler();
 
@@ -89,7 +89,8 @@ public:
     timer_ = new gbj_timer(Timing::PERIOD_PUBLISH);
   }
 
-  inline void callbacks(RPC_Callback *callbacks = 0, size_t callbacks_size = 0)
+  inline void callbacks(const RPC_Callback *callbacks = 0,
+                        size_t callbacks_size = 0)
   {
     callbacks_ = callbacks;
     callbacks_size_ = callbacks_size;
@@ -289,7 +290,7 @@ private:
   const char *server_, *token_;
   // Handlers
   Handlers handlers_;
-  RPC_Callback *callbacks_;
+  const RPC_Callback *callbacks_;
   // Methods
   ResultCodes connect();
   ResultCodes subscribe();
