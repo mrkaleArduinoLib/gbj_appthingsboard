@@ -25,7 +25,7 @@ This is an application library, which is used usually as a project library for p
 Internal parameters are hard-coded in the library as enumerations and none of them have setters or getters associated. The waiting for next connection attempt is in non-blocking mode. However, waiting on IoT platform connection `timeout is cca 5 seconds` in either case.
 
 * **Publishing period** (`12 seconds`): It is a default time period for publishing data to IoT platform. Real publishing period is associated with corresponding setter and getter.
-* **Connection waiting period** (`1 minute`): It is a time period during which the system is waiting for next attempt to connect to IoT platform. The real time period between failed connection attempts is increased by the IoT platform timeout, so that the real time period among attempts is cca `65 seconds`.
+* **Connection waiting period** (`1 minute`): It is a time period during which the system is waiting for next attempt to connect to IoT platform. The real time period between failed connection attempts is increased by the IoT platform timeout cca `5 seconds`, so that the real time period among attempts is cca `65 seconds`.
 
 
 <a id="dependency"></a>
