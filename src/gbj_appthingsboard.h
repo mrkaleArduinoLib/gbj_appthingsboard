@@ -39,7 +39,7 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const char *VERSION = "GBJ_APPTHINGSBOARD 1.13.0";
+  const char *VERSION = "GBJ_APPTHINGSBOARD 1.14.0";
 
   typedef void Handler();
 
@@ -101,13 +101,19 @@ public:
   {
     if (isConnected())
     {
+      ResultCodes result = setLastResult();
       if (!status_.flStatics)
       {
         publishAttribsStatic();
-        status_.flStatics = isSuccess(); // Only at very beginning
+        // Only at very beginning
+        status_.flStatics = isSuccess();
+        // Catch recent error code
+        result = getLastResult() ? getLastResult() : result;
       }
       publishAttribsDynamic();
+      result = getLastResult() ? getLastResult() : result;
       publishEvents();
+      result = getLastResult() ? getLastResult() : result;
       if (timer_->run())
       {
         if (handlers_.onPublish)
@@ -115,6 +121,7 @@ public:
           handlers_.onPublish();
         }
         publishMeasures();
+        result = getLastResult() ? getLastResult() : result;
       }
     }
     else
@@ -240,10 +247,10 @@ public:
   }
 
   // Abstract methods
-  virtual ResultCodes publishEvents() = 0;
-  virtual ResultCodes publishMeasures() = 0;
-  virtual ResultCodes publishAttribsStatic() = 0;
-  virtual ResultCodes publishAttribsDynamic() = 0;
+  virtual void publishEvents() = 0;
+  virtual void publishMeasures() = 0;
+  virtual void publishAttribsStatic() = 0;
+  virtual void publishAttribsDynamic() = 0;
 
   // Set timer period inputed as unsigned long in milliseconds
   inline void setPeriod(unsigned long period)

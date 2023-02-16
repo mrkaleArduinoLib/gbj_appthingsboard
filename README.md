@@ -436,16 +436,16 @@ The virtual methods that every child class derived from this library class shoul
 * The method `publishAttribsDynamic()` is dedicated for dynamic client attributes of the device, which change occassionally and rarely. So that they are published individually at every change immediatelly by the multiple calls of the method [publishAttrib()](#publishAttrib).
 
 #### Syntax
-    ResultCodes publishEvents()
-    ResultCodes publishMeasures()
-    ResultCodes publishAttribsStatic()
-    ResultCodes publishAttribsDynamic()
+    void publishEvents()
+    void publishMeasures()
+    void publishAttribsStatic()
+    void publishAttribsDynamic()
 
 #### Parameters
 None
 
 #### Returns
-Some of [result or error codes](#constants) from the parent class.
+None
 
 #### See also
 [publishMeasure()](#publishMeasure)
