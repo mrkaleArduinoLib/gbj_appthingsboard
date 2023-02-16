@@ -89,12 +89,10 @@ public:
     timer_ = new gbj_timer(Timing::PERIOD_PUBLISH);
   }
 
-  inline void callbacks(const RPC_Callback *callbacks = 0,
-                        size_t callbacks_size = 0)
+  inline void callbacks(const std::vector<RPC_Callback> &callbacks)
   {
     callbacks_ = callbacks;
-    callbacks_size_ = callbacks_size;
-    SERIAL_VALUE("callbacks", callbacks_size_)
+    SERIAL_VALUE("callbacks", callbacks_.size())
   }
 
   inline void run()
@@ -290,14 +288,13 @@ private:
       flConnGain = true;
     }
   } status_;
-  size_t callbacks_size_;
   WiFiClient wificlient_;
   ThingsBoardSized<256, 16> *thingsboard_ =
     new ThingsBoardSized<256, 16>(wificlient_);
   const char *server_, *token_;
   // Handlers
   Handlers handlers_;
-  const RPC_Callback *callbacks_;
+  std::vector<RPC_Callback> callbacks_;
   // Methods
   ResultCodes connect();
   ResultCodes subscribe();

@@ -64,13 +64,12 @@ gbj_appthingsboard::ResultCodes gbj_appthingsboard::connect()
 
 gbj_appthingsboard::ResultCodes gbj_appthingsboard::subscribe()
 {
-  if (callbacks_size_ == 0 || !isConnected() || isSubscribed())
+  if (callbacks_.size() == 0 || !isConnected() || isSubscribed())
   {
     return setLastResult();
   }
-  // All consequent data processing will happen in callbacks as denoted by
-  // callbacks[] array.
-  if (thingsboard_->RPC_Subscribe(callbacks_, callbacks_size_))
+  // All consequent data processing will happen in callbacks
+  if (thingsboard_->RPC_Subscribe(callbacks_.data(), callbacks_.size()))
   {
     SERIAL_TITLE("RPC subscribed")
     status_.flSubscribed = true;

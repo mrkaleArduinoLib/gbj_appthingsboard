@@ -206,20 +206,15 @@ Object performing connection and reconnection to the IoT platform.
 #### Description
 The registration method for subscribing external functions as <abbr title="Remote Procedure Call">RPC</abbr> callbacks to the IoT platform.
 * The method should be called in the setup section of a sketch.
-* The method subscribes all external function in the input list.
+* The method subscribes all external functions in the input list.
 
 #### Syntax
-	void callbacks(const RPC_Callback *callbacks, size_t callbacks_size)
+	void callbacks(const std::vector<RPC_Callback> &callbacks)
 
 #### Parameters
 * **callbacks**: Constant vector (array, list) of external functions to be subscribed.
   * *Valid values*: pointer to a vector of type `RPC_Callback`
-  * *Default value*: 0
-
-
-* **callbacks_size**: Number of callback functions in the list.
-  * *Valid values*: positive integer
-  * *Default value*: 0
+  * *Default value*: none
 
 #### Returns
 None
