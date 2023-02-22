@@ -65,7 +65,7 @@ Other constants, enumerations, result codes, and error codes are inherited from 
 * [Handlers](#handlers)
 
 ## Interface
-The methods in bold are virtual methods and should be implemented in a project specific libraries.
+The methods in bold are virtual methods and should be implemented in a project specific library.
 
 * [gbj_appthingsboard()](#gbj_appthingsboard)
 * [callbacks()](#callbacks)
@@ -169,7 +169,7 @@ gbj_appthingsboard device = gbj_appthingsboard(..., handlersDevice);
 
 #### Description
 Constructor creates the class instance object and initiates internal resources.
-* It inputs credentials for identifying a IoT Platform device.
+* It inputs credentials for identifying an IoT Platform device.
 * It creates an internal timer for periodical data publishing.
 
 #### Syntax
