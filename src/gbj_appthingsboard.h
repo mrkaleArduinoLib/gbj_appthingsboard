@@ -39,8 +39,6 @@
 class gbj_appthingsboard : public gbj_appbase
 {
 public:
-  const char *VERSION = "GBJ_APPTHINGSBOARD 1.14.0";
-
   typedef void Handler();
 
   struct Handlers
@@ -249,6 +247,8 @@ public:
   virtual void publishMeasures() = 0;
   virtual void publishAttribsStatic() = 0;
   virtual void publishAttribsDynamic() = 0;
+
+  // Setters
 
   // Set timer period inputed as unsigned long in milliseconds
   inline void setPeriod(unsigned long period)

@@ -50,14 +50,6 @@ Internal parameters are hard-coded in the library as enumerations and none of th
 > Library is not intended to be utilized on platforms without WiFi capabality.
 
 
-<a id="constants"></a>
-
-## Constants
-* **VERSION**: Name and semantic version of the library.
-
-Other constants, enumerations, result codes, and error codes are inherited from the parent library.
-
-
 <a id="interface"></a>
 
 ## Custom data types
@@ -78,8 +70,8 @@ The methods in bold are virtual methods and should be implemented in a project s
 * [publishAttribsBatch()](#publishAttribsBatch)
 * [**publishAttribsStatic()**](#publish)
 * [**publishAttribsDynamic()**](#publish)
-* [**setPeriod()**](#setPeriod)
-* [**getPeriod()**](#getPeriod)
+* [setPeriod()](#setPeriod)
+* [getPeriod()](#getPeriod)
 * [getPrmName()](#getPrmName)
 * [getFails()](#getFails)
 * [getServer()](#getServer)
