@@ -61,6 +61,7 @@ The methods in bold are virtual methods and should be implemented in a project s
 
 * [gbj_appthingsboard()](#gbj_appthingsboard)
 * [callbacks()](#callbacks)
+* [disconnect()](#disconnect)
 * [**run()**](#run)
 * [**publishEvents()**](#publish)
 * [publishMeasure()](#publishMeasure)
@@ -228,6 +229,26 @@ void setup()
   device.callbacks(callbacks.data(), callbacks.size());
 }
 ```
+
+[Back to interface](#interface)
+
+
+<a id="disconnect"></a>
+
+## disconnect()
+
+#### Description
+The method disconnects microcontroller from IoT platform.
+* The method should be call at disconnection from wifi.
+
+#### Syntax
+    void disconnect()
+
+#### Parameters
+None
+
+#### Returns
+None
 
 [Back to interface](#interface)
 

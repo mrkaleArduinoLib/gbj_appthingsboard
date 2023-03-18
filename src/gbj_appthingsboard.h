@@ -93,6 +93,8 @@ public:
     SERIAL_VALUE("callbacks", callbacks_.size())
   }
 
+  inline void disconnect() { return thingsboard_->disconnect(); }
+
   inline void run()
   {
     if (isConnected())
